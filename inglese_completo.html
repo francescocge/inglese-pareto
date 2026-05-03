@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Inglese Pareto</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#FDF8F2;--warm:#F5ECD7;--warm2:#EDE0C8;
+  --gold:#C8923A;--gold-l:#E8B96A;--gold-d:#A07030;
+  --brown:#7A5C3A;--dark:#2E1F0E;
+  --green:#3A7D52;--red:#B84040;--blue:#2B6CB0;
+  --shadow:0 4px 20px rgba(120,80,30,.13);
+  --shadow-sm:0 2px 10px rgba(120,80,30,.08);
+  --nav-h:64px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:"Nunito",sans-serif;background:var(--cream);color:var(--dark)}
+
+/* ── LAYOUT ── */
+#app{display:flex;flex-direction:column;height:100%}
+.page-wrap{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:calc(var(--nav-h) + 16px)}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:#fff;border-top:1px solid var(--warm2);display:flex;z-index:100;box-shadow:0 -2px 12px rgba(120,80,30,.08)}
+.nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;transition:color .2s;color:var(--brown);opacity:.5;font-size:.6rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;border:none;background:transparent;font-family:"Nunito",sans-serif;padding-bottom:env(safe-area-inset-bottom)}
+.nav-tab.active{color:var(--gold);opacity:1}
+.nav-icon{font-size:1.35rem;line-height:1}
+
+/* ── SECTIONS ── */
+.section{display:none}
+.section.active{display:block}
+
+/* ── CONTAINER ── */
+.container{max-width:580px;margin:0 auto;padding:20px 16px}
+
+/* ── HEADER ── */
+.top-bar{background:linear-gradient(135deg,#2E1F0E,#5C3A1A);padding:22px 20px 18px;text-align:center}
+.top-bar h1{font-family:"Playfair Display",serif;font-size:clamp(1.3rem,4.5vw,1.9rem);color:var(--gold-l);margin-bottom:3px}
+.top-bar p{font-size:.78rem;color:rgba(255,255,255,.55);font-weight:300}
+
+/* ── CARDS ── */
+.card{background:#fff;border-radius:18px;box-shadow:var(--shadow);padding:18px;margin-bottom:14px}
+.card-title{font-family:"Playfair Display",serif;font-size:1rem;color:var(--dark);margin-bottom:12px}
+
+/* ── DASHBOARD ── */
+.welcome-card{background:linear-gradient(135deg,var(--dark),#5C3A1A);border-radius:20px;padding:22px;color:#fff;margin-bottom:14px}
+.welcome-card h2{font-family:"Playfair Display",serif;font-size:1.35rem;color:var(--gold-l);margin-bottom:6px}
+.welcome-card p{font-size:.82rem;opacity:.7;line-height:1.5}
+.stats-row{display:flex;gap:10px;margin-top:14px}
+.stat-box{flex:1;background:rgba(255,255,255,.1);border-radius:12px;padding:10px;text-align:center}
+.stat-box .val{font-size:1.5rem;font-weight:800;color:var(--gold-l);display:block}
+.stat-box .lbl{font-size:.65rem;opacity:.65;text-transform:uppercase;letter-spacing:.5px}
+
+.prog-row{margin-bottom:12px}
+.prog-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.prog-name{font-size:.82rem;font-weight:700;color:var(--dark)}
+.prog-pct{font-size:.78rem;font-weight:800;color:var(--gold)}
+.prog-bar{height:7px;background:var(--warm);border-radius:4px}
+.prog-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--gold),var(--gold-l));transition:width .6s}
+
+.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.quick-btn{background:#fff;border-radius:16px;padding:15px 10px;text-align:center;box-shadow:var(--shadow-sm);cursor:pointer;border:2px solid transparent;transition:all .2s}
+.quick-btn:active{transform:scale(.96)}
+.quick-btn .qi{font-size:1.8rem;margin-bottom:5px}
+.quick-btn .qn{font-size:.8rem;font-weight:800;color:var(--dark)}
+.quick-btn .qs{font-size:.68rem;color:var(--brown);margin-top:2px}
+
+/* ── PIANO ── */
+.dots-wrap{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
+.dot{width:34px;height:34px;border-radius:50%;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:800;color:var(--brown);cursor:pointer;transition:all .2s;flex-shrink:0}
+.dot.done{background:var(--green);border-color:var(--green);color:#fff}
+.dot.current{background:var(--gold);border-color:var(--gold);color:#fff;transform:scale(1.15)}
+.dot.locked{opacity:.3;cursor:default}
+
+.month-hero{background:linear-gradient(135deg,var(--dark),#5C3A1A);border-radius:20px;padding:20px;color:#fff;margin-bottom:14px}
+.month-tag{display:inline-block;background:var(--gold);color:#fff;font-size:.68rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:3px 12px;border-radius:20px;margin-bottom:9px}
+.month-hero h2{font-family:"Playfair Display",serif;font-size:1.35rem;color:var(--gold-l);margin-bottom:6px}
+.month-hero .goal{font-size:.82rem;opacity:.78;line-height:1.55;margin-bottom:13px}
+.m-stats{display:flex;gap:8px;flex-wrap:wrap}
+.m-stat{background:rgba(255,255,255,.1);border-radius:10px;padding:7px 12px;font-size:.76rem;font-weight:700}
+.m-stat span{display:block;font-size:1rem;color:var(--gold-l)}
+
+.time-block{display:flex;gap:12px;align-items:flex-start;margin-bottom:13px;padding-bottom:13px;border-bottom:1px solid var(--warm)}
+.time-block:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.tbadge{background:var(--gold);color:#fff;border-radius:9px;padding:4px 10px;font-size:.72rem;font-weight:800;white-space:nowrap;flex-shrink:0;margin-top:2px}
+.tbadge.blue{background:var(--blue)}
+.tbadge.green{background:var(--green)}
+.tinfo h4{font-size:.88rem;font-weight:800;margin-bottom:2px}
+.tinfo p{font-size:.76rem;color:var(--brown);line-height:1.45}
+
+.word-chip{display:inline-flex;align-items:center;gap:5px;background:var(--warm);border-radius:20px;padding:6px 12px;margin:3px;font-size:.8rem;font-weight:700;border:1px solid rgba(200,146,58,.28);cursor:pointer;transition:all .2s}
+.word-chip:active{background:var(--gold);color:#fff}
+.word-chip .ph{font-size:.68rem;opacity:.65;font-style:italic}
+
+.tip-row{display:flex;gap:9px;margin-bottom:9px;font-size:.8rem;line-height:1.5}
+.tip-row:last-child{margin-bottom:0}
+.tip-row .tip-icon{font-size:1.1rem;flex-shrink:0}
+
+.nav-month{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.nav-month button{background:var(--gold);color:#fff;border:none;border-radius:12px;padding:10px 18px;font-size:.8rem;font-weight:800;cursor:pointer;transition:all .2s;font-family:"Nunito",sans-serif}
+.nav-month button:disabled{opacity:.3;cursor:default}
+.nav-month button:active:not(:disabled){transform:scale(.95)}
+.nav-month .nm-center{font-size:.78rem;color:var(--brown);font-weight:700}
+
+.month-done-btn{background:var(--green);color:#fff;border:none;border-radius:16px;padding:14px;font-size:.9rem;font-weight:800;cursor:pointer;width:100%;transition:all .2s;font-family:"Nunito",sans-serif;margin-top:14px}
+.month-done-btn:active{transform:scale(.98)}
+
+/* ── ESERCIZI ── */
+.level-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.level-card{background:#fff;border-radius:18px;box-shadow:var(--shadow-sm);padding:16px;cursor:pointer;border:2px solid transparent;transition:all .2s;position:relative}
+.level-card:active{transform:scale(.97)}
+.level-card.locked{opacity:.4;cursor:default}
+.level-card .level-num{font-size:2rem;margin-bottom:4px}
+.level-card .level-name{font-size:.82rem;font-weight:800;color:var(--dark);margin-bottom:8px}
+.level-card .level-prog{font-size:.72rem;color:var(--brown);margin-bottom:8px}
+.level-card .level-stars{font-size:.9rem}
+.level-lock{position:absolute;top:10px;right:10px;font-size:1.2rem;opacity:.3}
+
+.modes-wrap{margin-bottom:14px}
+.mode-row{background:#fff;border-radius:16px;box-shadow:var(--shadow-sm);padding:14px;margin-bottom:10px;cursor:pointer;display:flex;align-items:center;gap:12px;border:2px solid transparent;transition:all .2s}
+.mode-row:active{transform:scale(.98)}
+.mode-row .mode-icon{font-size:1.8rem;flex-shrink:0}
+.mode-row .mode-info{flex:1}
+.mode-row .mode-name{font-size:.88rem;font-weight:800;color:var(--dark);margin-bottom:2px}
+.mode-row .mode-desc{font-size:.72rem;color:var(--brown)}
+.mode-row .mode-score{font-size:.78rem;font-weight:800;color:var(--gold);margin-left:auto;flex-shrink:0}
+
+.ex-header{background:linear-gradient(135deg,var(--dark),#5C3A1A);border-radius:20px;padding:18px;color:#fff;margin-bottom:14px}
+.ex-header .ex-title{font-family:"Playfair Display",serif;font-size:1.2rem;color:var(--gold-l);margin-bottom:8px}
+.ex-header .ex-prog{font-size:.76rem;opacity:.7}
+
+.ex-card{background:#fff;border-radius:18px;box-shadow:var(--shadow);padding:20px;margin-bottom:14px;text-align:center}
+.ex-card .question{font-size:1.1rem;font-weight:800;color:var(--dark);margin-bottom:20px;line-height:1.5}
+.ex-card .answer{font-size:1.3rem;font-weight:700;color:var(--gold);margin-bottom:16px}
+
+.opts-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.opt-btn{background:var(--warm);border:2px solid var(--gold);border-radius:14px;padding:14px;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s;font-family:"Nunito",sans-serif;color:var(--dark)}
+.opt-btn:active{transform:scale(.96)}
+.opt-btn.correct{background:var(--green);color:#fff;border-color:var(--green)}
+.opt-btn.wrong{background:var(--red);color:#fff;border-color:var(--red)}
+
+.input-ans{width:100%;padding:14px;font-size:1rem;border:2px solid var(--gold);border-radius:14px;margin-bottom:14px;font-family:"Nunito",sans-serif;background:var(--warm)}
+.input-ans:focus{outline:none;border-color:var(--gold-d)}
+
+.ex-btn{background:var(--gold);color:#fff;border:none;border-radius:14px;padding:14px 24px;font-size:.9rem;font-weight:800;cursor:pointer;transition:all .2s;font-family:"Nunito",sans-serif}
+.ex-btn:active{transform:scale(.96)}
+.ex-btn.green{background:var(--green)}
+.ex-btn.blue{background:var(--blue)}
+
+.words-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:16px}
+.word-tile{background:var(--warm);border:2px solid var(--gold);border-radius:12px;padding:10px 16px;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s;font-family:"Nunito",sans-serif;color:var(--dark)}
+.word-tile:active{transform:scale(.95)}
+.word-tile.used{opacity:.3;cursor:default}
+
+.built-sentence{min-height:60px;background:var(--warm2);border-radius:14px;padding:14px;margin-bottom:14px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center}
+.built-word{background:#fff;border:1px solid var(--gold);border-radius:8px;padding:6px 12px;font-size:.88rem;font-weight:700;color:var(--dark)}
+
+.score-card{background:linear-gradient(135deg,var(--dark),#5C3A1A);border-radius:20px;padding:24px;color:#fff;text-align:center;margin-bottom:14px}
+.score-card .score-icon{font-size:3.5rem;margin-bottom:10px}
+.score-card .score-val{font-size:3rem;font-weight:800;color:var(--gold-l);margin-bottom:6px}
+.score-card .score-label{font-size:.9rem;opacity:.7;margin-bottom:16px}
+.score-card .score-stars{font-size:1.8rem;margin-bottom:16px}
+.score-btns{display:flex;gap:10px;justify-content:center}
+
+/* ── DIZIONARIO ── */
+.dict-search{width:100%;padding:14px;font-size:1rem;border:2px solid var(--gold);border-radius:14px;margin-bottom:14px;font-family:"Nunito",sans-serif;background:#fff}
+.dict-search:focus{outline:none;border-color:var(--gold-d)}
+
+.dict-add{background:#fff;border-radius:18px;box-shadow:var(--shadow);padding:16px;margin-bottom:14px}
+.dict-input{width:100%;padding:10px;font-size:.88rem;border:1px solid var(--warm2);border-radius:10px;margin-bottom:8px;font-family:"Nunito",sans-serif}
+.dict-input:focus{outline:none;border-color:var(--gold)}
+
+.dict-list{margin-bottom:14px}
+.dict-item{background:#fff;border-radius:14px;box-shadow:var(--shadow-sm);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.dict-item .dit{flex:1;font-size:.88rem;font-weight:700;color:var(--dark)}
+.dict-item .den{flex:1;font-size:.88rem;color:var(--brown)}
+.dict-item .dph{font-size:.72rem;color:var(--gold);font-style:italic;margin-left:auto}
+.dict-item .dspk{font-size:1.2rem;cursor:pointer;flex-shrink:0}
+.dict-item .ddel{font-size:1rem;cursor:pointer;flex-shrink:0;opacity:.5}
+
+/* ── GUIDA ── */
+.guida-intro{background:linear-gradient(135deg,var(--dark),#5C3A1A);border-radius:20px;padding:20px;color:#fff;margin-bottom:14px}
+.guida-intro h2{font-family:"Playfair Display",serif;font-size:1.3rem;color:var(--gold-l);margin-bottom:8px}
+.guida-intro p{font-size:.82rem;opacity:.78;line-height:1.6}
+
+.guida-sec{background:#fff;border-radius:18px;box-shadow:var(--shadow);padding:16px;margin-bottom:14px}
+.guida-sec-head{display:flex;gap:12px;align-items:center;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--warm)}
+.guida-icon{font-size:1.8rem}
+.guida-sec-title{font-size:.95rem;font-weight:800;color:var(--dark)}
+.guida-sec-sub{font-size:.72rem;color:var(--brown);margin-top:2px}
+
+.gstep{display:flex;gap:10px;margin-bottom:10px}
+.gstep-num{background:var(--gold);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;flex-shrink:0;margin-top:2px}
+.gstep-text{font-size:.8rem;line-height:1.5;color:var(--dark)}
+
+.mode-row-g{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--warm2)}
+.mode-row-g:last-child{border-bottom:none;padding-bottom:0;margin-bottom:0}
+.mode-row-g-icon{font-size:1.5rem;flex-shrink:0;margin-top:2px}
+.mode-row-g-info{flex:1}
+.mode-row-g-info strong{display:block;font-size:.85rem;color:var(--dark);margin-bottom:2px}
+.mode-row-g-info span{font-size:.75rem;color:var(--brown);line-height:1.4}
+
+.routine-g{background:var(--warm);border-radius:16px;padding:16px;margin-bottom:14px}
+.routine-g h3{font-size:.95rem;font-weight:800;color:var(--dark);margin-bottom:10px}
+.routine-row-g{display:flex;gap:10px;margin-bottom:8px;font-size:.8rem;line-height:1.5}
+.routine-row-g:last-child{margin-bottom:0}
+.routine-row-g .ttime{background:var(--gold);color:#fff;border-radius:8px;padding:3px 8px;font-size:.7rem;font-weight:800;flex-shrink:0;margin-top:2px}
+
+.save-g{background:var(--warm);border-radius:16px;padding:16px;margin-bottom:14px}
+.save-g h3{font-size:.95rem;font-weight:800;color:var(--dark);margin-bottom:10px}
+.save-row-g{font-size:.8rem;line-height:1.6;color:var(--dark);margin-bottom:6px}
+.save-row-g:last-child{margin-bottom:0}
+
+.install-g{background:var(--warm);border-radius:16px;padding:16px;margin-bottom:14px}
+.install-g h3{font-size:.95rem;font-weight:800;color:var(--dark);margin-bottom:10px}
+.device-g{padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid rgba(120,80,30,.15)}
+.device-g:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.device-g-name{font-size:.85rem;font-weight:800;color:var(--gold);margin-bottom:6px}
+.device-g-step{font-size:.78rem;color:var(--dark);line-height:1.5;margin-bottom:4px}
+.device-g-step:last-child{margin-bottom:0}
+
+/* ── AI FRASI ── */
+.ai-input-wrap{margin-bottom:14px}
+.ai-input{width:100%;padding:12px;font-size:.88rem;border:2px solid var(--gold);border-radius:12px;font-family:"Nunito",sans-serif;background:var(--warm);min-height:80px;resize:vertical}
+.ai-input:focus{outline:none;border-color:var(--gold-d)}
+
+.ai-result{background:var(--warm2);border-radius:14px;padding:14px;margin-bottom:14px}
+.ai-result-title{font-size:.85rem;font-weight:800;color:var(--dark);margin-bottom:8px}
+.ai-result-text{font-size:.88rem;color:var(--dark);line-height:1.6;white-space:pre-wrap}
+
+.ai-loading{background:var(--warm2);border-radius:14px;padding:20px;text-align:center;margin-bottom:14px}
+.ai-loading-icon{font-size:2rem;margin-bottom:8px;animation:spin 1s linear infinite}
+.ai-loading-text{font-size:.82rem;color:var(--brown)}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.ai-error{background:#FFE5E5;border:2px solid var(--red);border-radius:14px;padding:14px;margin-bottom:14px}
+.ai-error-text{font-size:.82rem;color:var(--red);font-weight:700}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="top-bar">
+    <h1>Inglese Pareto</h1>
+    <p>950+ parole · 12 mesi · 20 min/giorno</p>
+  </div>
+
+  <div class="page-wrap">
+    <section id="sec-home" class="section active">
+      <div class="container" id="homeContent"></div>
+    </section>
+
+    <section id="sec-piano" class="section">
+      <div class="container" id="pianoContent"></div>
+    </section>
+
+    <section id="sec-esercizi" class="section">
+      <div class="container" id="eserciziContent"></div>
+    </section>
+
+    <section id="sec-dizionario" class="section">
+      <div class="container" id="dizionarioContent"></div>
+    </section>
+
+    <section id="sec-guida" class="section">
+      <div class="container" id="guidaContent"></div>
+    </section>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="nav-tab active" onclick="showSection('home', this)">
+      <div class="nav-icon">🏠</div>
+      <div>Home</div>
+    </button>
+    <button class="nav-tab" onclick="showSection('piano', this)">
+      <div class="nav-icon">📅</div>
+      <div>Piano</div>
+    </button>
+    <button class="nav-tab" onclick="showSection('esercizi', this)">
+      <div class="nav-icon">✏️</div>
+      <div>Esercizi</div>
+    </button>
+    <button class="nav-tab" onclick="showSection('dizionario', this)">
+      <div class="nav-icon">📖</div>
+      <div>Dizionario</div>
+    </button>
+    <button class="nav-tab" onclick="showSection('guida', this)">
+      <div class="nav-icon">❓</div>
+      <div>Guida</div>
+    </button>
+  </div>
+</div>
+
+<script>
+// ======================================================
+// DATA: VOCABOLARIO 12 MESI (951+ PAROLE A1→A2)
+// ======================================================
+var MONTHS = [
+{num:1,name:"Le basi assolute - A1",goal:"Le prime 80 parole fondamentali. Pronomi, verbi essere/avere, numeri, saluti. Base per tutto.",words:80,newWords:3,focus:"Pronomi, verbo essere/avere, numeri 1-20, saluti base",vocab:[{it:"io",en:"I",ph:"AI"},{it:"tu",en:"you",ph:"IU"},{it:"lui",en:"he",ph:"HI"},{it:"lei",en:"she",ph:"SCI"},{it:"noi",en:"we",ph:"UI"},{it:"loro",en:"they",ph:"DEI"},{it:"il/la",en:"the",ph:"DE"},{it:"un/una",en:"a",ph:"EI"},{it:"essere",en:"be",ph:"BII"},{it:"sono",en:"I am",ph:"AI AM"},{it:"sei",en:"you are",ph:"IU AR"},{it:"è",en:"is",ph:"IZ"},{it:"siamo",en:"we are",ph:"UI AR"},{it:"avere",en:"have",ph:"HEV"},{it:"ho",en:"I have",ph:"AI HEV"},{it:"hai",en:"you have",ph:"IU HEV"},{it:"sì",en:"yes",ph:"IES"},{it:"no",en:"no",ph:"NO"},{it:"per favore",en:"please",ph:"PLIIZ"},{it:"grazie",en:"thank you",ph:"THENK IU"},{it:"prego",en:"you're welcome",ph:"IUR UELCAM"},{it:"scusa",en:"sorry",ph:"SORI"},{it:"ciao",en:"hello",ph:"HELOU"},{it:"buongiorno",en:"good morning",ph:"GUD MORNING"},{it:"buonasera",en:"good evening",ph:"GUD IIVNING"},{it:"arrivederci",en:"goodbye",ph:"GUDBAI"},{it:"questo",en:"this",ph:"DIS"},{it:"quello",en:"that",ph:"DAT"},{it:"qui",en:"here",ph:"HIIR"},{it:"lì",en:"there",ph:"DEER"},{it:"dove",en:"where",ph:"UER"},{it:"cosa",en:"what",ph:"UOT"},{it:"chi",en:"who",ph:"HU"},{it:"quando",en:"when",ph:"UEN"},{it:"come",en:"how",ph:"HAU"},{it:"perché",en:"why",ph:"UAI"},{it:"bene",en:"good",ph:"GUD"},{it:"male",en:"bad",ph:"BED"},{it:"molto",en:"very",ph:"VERI"},{it:"poco",en:"little",ph:"LITOL"},{it:"uno",en:"one",ph:"UAN"},{it:"due",en:"two",ph:"TU"},{it:"tre",en:"three",ph:"THRII"},{it:"quattro",en:"four",ph:"FOR"},{it:"cinque",en:"five",ph:"FAIV"},{it:"sei",en:"six",ph:"SIX"},{it:"sette",en:"seven",ph:"SEVEN"},{it:"otto",en:"eight",ph:"EIT"},{it:"nove",en:"nine",ph:"NAIN"},{it:"dieci",en:"ten",ph:"TEN"},{it:"undici",en:"eleven",ph:"ILEVEN"},{it:"dodici",en:"twelve",ph:"TUELV"},{it:"tredici",en:"thirteen",ph:"THERTIIIN"},{it:"quattordici",en:"fourteen",ph:"FORTIIIN"},{it:"quindici",en:"fifteen",ph:"FIFTIIIN"},{it:"sedici",en:"sixteen",ph:"SIXTIIIN"},{it:"diciassette",en:"seventeen",ph:"SEVENTIIIN"},{it:"diciotto",en:"eighteen",ph:"EITIIIN"},{it:"diciannove",en:"nineteen",ph:"NAINTIIIN"},{it:"venti",en:"twenty",ph:"TUENTI"},{it:"e",en:"and",ph:"END"},{it:"o",en:"or",ph:"OR"},{it:"ma",en:"but",ph:"BOT"},{it:"in",en:"in",ph:"IN"},{it:"su",en:"on",ph:"ON"},{it:"a",en:"to",ph:"TU"},{it:"di",en:"of",ph:"OV"},{it:"con",en:"with",ph:"UIT"},{it:"per",en:"for",ph:"FOR"},{it:"da",en:"from",ph:"FROM"},{it:"non",en:"not",ph:"NOT"},{it:"mio",en:"my",ph:"MAI"},{it:"tuo",en:"your",ph:"IUR"},{it:"suo",en:"his/her",ph:"HIZ/HER"},{it:"nostro",en:"our",ph:"AUER"},{it:"loro",en:"their",ph:"DEER"}],schedule:[{time:"5 min",color:"",title:"Parole base",desc:"Studia 3 parole nuove. Ripeti ad alta voce 5 volte ciascuna."},{time:"5 min",color:"",title:"Numeri 1-20",desc:"Conta da 1 a 20 in inglese. Ripeti finché non scorre fluido."},{time:"5 min",color:"blue",title:"Frasi semplici",desc:"Scrivi 3 frasi base: I am Francesco. You are here. This is good."},{time:"5 min",color:"green",title:"Ripeti",desc:"Ripeti tutte le parole studiate oggi senza guardare."}],tips:["Questo è il mese più importante - sono le fondamenta","I am, you are, he is - impara questi a memoria","Non andare avanti finché non ricordi queste 80 parole","Conta i numeri in inglese ogni giorno - diventa automatico"],extra:["Dì i saluti in inglese con i colleghi in ufficio","Quando vedi numeri (prezzi, indirizzi) dilli in inglese mentalmente","Pensa in inglese: This is my office, I am here"]},
+
+{num:2,name:"Azioni quotidiane e casa - A1",goal:"Verbi base della vita quotidiana + vocabolario della casa. Potrai dire cosa fai ogni giorno.",words:78,newWords:3,focus:"Verbi fare/andare/venire/volere, casa, famiglia, cibo base",vocab:[{it:"fare",en:"do/make",ph:"DU/MEIK"},{it:"faccio",en:"I do",ph:"AI DU"},{it:"andare",en:"go",ph:"GOU"},{it:"vado",en:"I go",ph:"AI GOU"},{it:"venire",en:"come",ph:"CAM"},{it:"vengo",en:"I come",ph:"AI CAM"},{it:"vedere",en:"see",ph:"SII"},{it:"vedo",en:"I see",ph:"AI SII"},{it:"volere",en:"want",ph:"UONT"},{it:"voglio",en:"I want",ph:"AI UONT"},{it:"potere",en:"can",ph:"KEN"},{it:"posso",en:"I can",ph:"AI KEN"},{it:"dovere",en:"must",ph:"MAST"},{it:"devo",en:"I must",ph:"AI MAST"},{it:"sapere",en:"know",ph:"NOU"},{it:"so",en:"I know",ph:"AI NOU"},{it:"dire",en:"say",ph:"SEI"},{it:"dico",en:"I say",ph:"AI SEI"},{it:"dare",en:"give",ph:"GHIV"},{it:"do",en:"I give",ph:"AI GHIV"},{it:"prendere",en:"take",ph:"TEIK"},{it:"prendo",en:"I take",ph:"AI TEIK"},{it:"mettere",en:"put",ph:"PUT"},{it:"metto",en:"I put",ph:"AI PUT"},{it:"casa",en:"house",ph:"HAUS"},{it:"appartamento",en:"apartment",ph:"APARTMENT"},{it:"stanza",en:"room",ph:"RUUM"},{it:"camera",en:"bedroom",ph:"BEDRUM"},{it:"bagno",en:"bathroom",ph:"BATHRUM"},{it:"cucina",en:"kitchen",ph:"KICEN"},{it:"salotto",en:"living room",ph:"LIVING RUUM"},{it:"porta",en:"door",ph:"DOR"},{it:"finestra",en:"window",ph:"UINDOU"},{it:"letto",en:"bed",ph:"BED"},{it:"tavolo",en:"table",ph:"TEIBOL"},{it:"sedia",en:"chair",ph:"CHER"},{it:"divano",en:"sofa",ph:"SOUFA"},{it:"famiglia",en:"family",ph:"FEMILI"},{it:"madre",en:"mother",ph:"MADER"},{it:"padre",en:"father",ph:"FADER"},{it:"figlio",en:"son",ph:"SAN"},{it:"figlia",en:"daughter",ph:"DOTER"},{it:"fratello",en:"brother",ph:"BRADER"},{it:"sorella",en:"sister",ph:"SISTER"},{it:"marito",en:"husband",ph:"HASBAND"},{it:"moglie",en:"wife",ph:"UAIF"},{it:"amico",en:"friend",ph:"FREND"},{it:"persona",en:"person",ph:"PERSON"},{it:"uomo",en:"man",ph:"MEN"},{it:"donna",en:"woman",ph:"UUMAN"},{it:"bambino",en:"child",ph:"CHAILD"},{it:"cibo",en:"food",ph:"FUUD"},{it:"acqua",en:"water",ph:"UOTER"},{it:"pane",en:"bread",ph:"BRED"},{it:"latte",en:"milk",ph:"MILK"},{it:"caffè",en:"coffee",ph:"COFI"},{it:"tè",en:"tea",ph:"TII"},{it:"carne",en:"meat",ph:"MIIT"},{it:"pesce",en:"fish",ph:"FISH"},{it:"verdura",en:"vegetable",ph:"VEGETABOL"},{it:"frutta",en:"fruit",ph:"FRUUT"},{it:"mela",en:"apple",ph:"APOL"},{it:"mangiare",en:"eat",ph:"IIT"},{it:"mangio",en:"I eat",ph:"AI IIT"},{it:"bere",en:"drink",ph:"DRINK"},{it:"bevo",en:"I drink",ph:"AI DRINK"},{it:"cucinare",en:"cook",ph:"CUUK"},{it:"cucino",en:"I cook",ph:"AI CUUK"},{it:"grande",en:"big",ph:"BIGH"},{it:"piccolo",en:"small",ph:"SMOL"},{it:"nuovo",en:"new",ph:"NIU"},{it:"vecchio",en:"old",ph:"OULD"},{it:"caldo",en:"hot",ph:"HOT"},{it:"freddo",en:"cold",ph:"COULD"},{it:"bello",en:"beautiful",ph:"BIUTIFUL"},{it:"brutto",en:"ugly",ph:"AGLI"},{it:"oggi",en:"today",ph:"TUDEI"},{it:"ieri",en:"yesterday",ph:"IESTERDEI"},{it:"domani",en:"tomorrow",ph:"TOMOROU"}],schedule:[{time:"5 min",color:"",title:"Verbi base",desc:"Studia i 10 verbi principali (fare, andare, venire...). Ripeti le coniugazioni."},{time:"5 min",color:"",title:"Casa",desc:"Impara le stanze e i mobili. Guarda intorno e nomina gli oggetti in inglese."},{time:"5 min",color:"blue",title:"Famiglia",desc:"Descrivi la tua famiglia in inglese: I have a wife, two children..."},{time:"5 min",color:"green",title:"Frasi pratiche",desc:"This is my house. I go to the kitchen. I want coffee."}],tips:["I go, you go, he goes - nota la 's' alla terza persona","Usa questi verbi ogni giorno: I go to work, I make coffee","La differenza tra house (edificio) e home (casa tua)","Do/make - 'do' per azioni generiche, 'make' per creare qualcosa"],extra:["Descrivi la tua giornata mentre la fai: I go to the bathroom, I make coffee","Quando entri in una stanza, dì il nome in inglese","Pensa ai membri della famiglia in inglese quando li vedi"]},
+
+{num:3,name:"Domande e conversazione - A1",goal:"Fare e capire domande. Rispondere in modo naturale. Conversazione base con clienti.",words:78,newWords:3,focus:"Domande what/where/when/who/how/why, verbi parlare/ascoltare, aggettivi comuni",vocab:[{it:"parlare",en:"speak",ph:"SPIIK"},{it:"parlo",en:"I speak",ph:"AI SPIIK"},{it:"capire",en:"understand",ph:"ANDERSTAND"},{it:"capisco",en:"I understand",ph:"AI ANDERSTAND"},{it:"ascoltare",en:"listen",ph:"LISEN"},{it:"ascolto",en:"I listen",ph:"AI LISEN"},{it:"leggere",en:"read",ph:"RIID"},{it:"leggo",en:"I read",ph:"AI RIID"},{it:"scrivere",en:"write",ph:"RAIT"},{it:"scrivo",en:"I write",ph:"AI RAIT"},{it:"pensare",en:"think",ph:"THINK"},{it:"penso",en:"I think",ph:"AI THINK"},{it:"credere",en:"believe",ph:"BILIIV"},{it:"credo",en:"I believe",ph:"AI BILIIV"},{it:"trovare",en:"find",ph:"FAIND"},{it:"trovo",en:"I find",ph:"AI FAIND"},{it:"cercare",en:"look for",ph:"LUK FOR"},{it:"cerco",en:"I look for",ph:"AI LUK FOR"},{it:"comprare",en:"buy",ph:"BAI"},{it:"compro",en:"I buy",ph:"AI BAI"},{it:"vendere",en:"sell",ph:"SEL"},{it:"vendo",en:"I sell",ph:"AI SEL"},{it:"pagare",en:"pay",ph:"PEI"},{it:"pago",en:"I pay",ph:"AI PEI"},{it:"quanto",en:"how much",ph:"HAU MACH"},{it:"quanti",en:"how many",ph:"HAU MENI"},{it:"quale",en:"which",ph:"UICH"},{it:"ogni",en:"every",ph:"EVRI"},{it:"tutto",en:"all",ph:"OL"},{it:"niente",en:"nothing",ph:"NATHING"},{it:"qualcosa",en:"something",ph:"SAMTHING"},{it:"qualcuno",en:"someone",ph:"SAMUUAN"},{it:"nessuno",en:"nobody",ph:"NOUBODI"},{it:"sempre",en:"always",ph:"OLUEIS"},{it:"mai",en:"never",ph:"NEVER"},{it:"spesso",en:"often",ph:"OFEN"},{it:"qualche volta",en:"sometimes",ph:"SAMTAIMZ"},{it:"ora",en:"now",ph:"NAU"},{it:"poi",en:"then",ph:"DEN"},{it:"prima",en:"before",ph:"BIFOR"},{it:"dopo",en:"after",ph:"AFTER"},{it:"durante",en:"during",ph:"DIURING"},{it:"già",en:"already",ph:"OLREDI"},{it:"ancora",en:"still",ph:"STIL"},{it:"quasi",en:"almost",ph:"OLMOUST"},{it:"abbastanza",en:"enough",ph:"INAF"},{it:"troppo",en:"too much",ph:"TUU MACH"},{it:"più",en:"more",ph:"MOR"},{it:"meno",en:"less",ph:"LES"},{it:"meglio",en:"better",ph:"BETER"},{it:"peggio",en:"worse",ph:"UORS"},{it:"stesso",en:"same",ph:"SEIM"},{it:"diverso",en:"different",ph:"DIFERENT"},{it:"importante",en:"important",ph:"IMPORTANT"},{it:"facile",en:"easy",ph:"IIZI"},{it:"difficile",en:"difficult",ph:"DIFICOLT"},{it:"possibile",en:"possible",ph:"POSIBOL"},{it:"impossibile",en:"impossible",ph:"IMPOSIBOL"},{it:"giusto",en:"right",ph:"RAIT"},{it:"sbagliato",en:"wrong",ph:"RONG"},{it:"vero",en:"true",ph:"TRUU"},{it:"falso",en:"false",ph:"FOLS"},{it:"sicuro",en:"sure",ph:"SHUR"},{it:"forse",en:"maybe",ph:"MEIBI"},{it:"certamente",en:"certainly",ph:"SERTENLI"},{it:"probabilmente",en:"probably",ph:"PROBABLI"},{it:"veramente",en:"really",ph:"RIILI"},{it:"esattamente",en:"exactly",ph:"EXAKTLI"},{it:"solamente",en:"only",ph:"ONLI"},{it:"anche",en:"also",ph:"OLSO"},{it:"ancora",en:"again",ph:"AGHEIN"},{it:"insieme",en:"together",ph:"TUGEDER"},{it:"solo",en:"alone",ph:"ALOUN"},{it:"vicino",en:"near",ph:"NIIR"},{it:"lontano",en:"far",ph:"FAR"},{it:"dentro",en:"inside",ph:"INSAID"},{it:"fuori",en:"outside",ph:"AUTSAID"},{it:"sopra",en:"above",ph:"ABAV"},{it:"sotto",en:"under",ph:"ANDER"}],schedule:[{time:"5 min",color:"",title:"Domande base",desc:"Pratica: What is this? Where are you? When do you work? How much?"},{time:"5 min",color:"",title:"Avverbi tempo",desc:"Now, today, tomorrow, always, never, sometimes - usali in frasi."},{time:"5 min",color:"blue",title:"Aggettivi utili",desc:"Important, easy, difficult, possible - descrivi situazioni."},{time:"5 min",color:"green",title:"Dialogo cliente",desc:"Simula: Where is the apartment? How much? When can I see it?"}],tips:["How much? è per prezzo e quantità non numerabile (acqua, tempo)","How many? è per cose numerabili (camere, bagni, finestre)","Maybe = forse, Perhaps = forse (più formale)","Near/far - 'The apartment is near the center' (non 'near to')"],extra:["Con i clienti stranieri: Where are you from? When do you want to see it?","Pratica domande mentre lavori: Where is this street? How much is this?","Pensa ai tuoi dubbi in inglese: Where is my phone? When is the appointment?"]},
+
+{num:4,name:"Tempo, date, calendario - A1",goal:"Parlare di tempo, orari, appuntamenti. Fondamentale per organizzare visite con clienti.",words:78,newWords:3,focus:"Giorni settimana, mesi, ore, preposizioni di tempo, meteo base",vocab:[{it:"lunedì",en:"Monday",ph:"MANDEI"},{it:"martedì",en:"Tuesday",ph:"TIUZADEI"},{it:"mercoledì",en:"Wednesday",ph:"UENZDEI"},{it:"giovedì",en:"Thursday",ph:"THERZDEI"},{it:"venerdì",en:"Friday",ph:"FRAIDEI"},{it:"sabato",en:"Saturday",ph:"SATERDEI"},{it:"domenica",en:"Sunday",ph:"SANDEI"},{it:"giorno",en:"day",ph:"DEI"},{it:"settimana",en:"week",ph:"UIIK"},{it:"fine settimana",en:"weekend",ph:"UIIKEND"},{it:"mese",en:"month",ph:"MANTH"},{it:"anno",en:"year",ph:"IIIR"},{it:"gennaio",en:"January",ph:"GENIUARI"},{it:"febbraio",en:"February",ph:"FEBRUARI"},{it:"marzo",en:"March",ph:"MARCH"},{it:"aprile",en:"April",ph:"EIPROL"},{it:"maggio",en:"May",ph:"MEI"},{it:"giugno",en:"June",ph:"GIUUN"},{it:"luglio",en:"July",ph:"GIULAI"},{it:"agosto",en:"August",ph:"OGOST"},{it:"settembre",en:"September",ph:"SEPTEMBER"},{it:"ottobre",en:"October",ph:"OCTOBER"},{it:"novembre",en:"November",ph:"NOVEMBER"},{it:"dicembre",en:"December",ph:"DISEMBER"},{it:"primavera",en:"spring",ph:"SPRING"},{it:"estate",en:"summer",ph:"SAMER"},{it:"autunno",en:"autumn/fall",ph:"OTOM/FOL"},{it:"inverno",en:"winter",ph:"UINTER"},{it:"ora",en:"hour",ph:"AUER"},{it:"minuto",en:"minute",ph:"MINIT"},{it:"secondo",en:"second",ph:"SECOND"},{it:"mattina",en:"morning",ph:"MORNING"},{it:"pomeriggio",en:"afternoon",ph:"AFTERNUUN"},{it:"sera",en:"evening",ph:"IIVNING"},{it:"notte",en:"night",ph:"NAIT"},{it:"mezzanotte",en:"midnight",ph:"MIDNAIT"},{it:"mezzogiorno",en:"noon",ph:"NUUN"},{it:"presto",en:"early",ph:"ERLI"},{it:"tardi",en:"late",ph:"LEIT"},{it:"in tempo",en:"on time",ph:"ON TAIM"},{it:"tempo (meteo)",en:"weather",ph:"UEDER"},{it:"sole",en:"sun",ph:"SAN"},{it:"pioggia",en:"rain",ph:"REIN"},{it:"neve",en:"snow",ph:"SNOU"},{it:"vento",en:"wind",ph:"UIND"},{it:"nuvola",en:"cloud",ph:"CLAUD"},{it:"tempesta",en:"storm",ph:"STORM"},{it:"fa caldo",en:"it's hot",ph:"ITS HOT"},{it:"fa freddo",en:"it's cold",ph:"ITS COULD"},{it:"piove",en:"it's raining",ph:"ITS REINING"},{it:"nevica",en:"it's snowing",ph:"ITS SNOUING"},{it:"iniziare",en:"start/begin",ph:"START/BIGHIN"},{it:"inizio",en:"I start",ph:"AI START"},{it:"finire",en:"finish/end",ph:"FINISH/END"},{it:"finisco",en:"I finish",ph:"AI FINISH"},{it:"aspettare",en:"wait",ph:"UEIT"},{it:"aspetto",en:"I wait",ph:"AI UEIT"},{it:"arrivare",en:"arrive",ph:"ARAIV"},{it:"arrivo",en:"I arrive",ph:"AI ARAIV"},{it:"partire",en:"leave",ph:"LIIV"},{it:"parto",en:"I leave",ph:"AI LIIV"},{it:"tornare",en:"return",ph:"RITERN"},{it:"torno",en:"I return",ph:"AI RITERN"},{it:"restare",en:"stay",ph:"STEI"},{it:"resto",en:"I stay",ph:"AI STEI"},{it:"appuntamento",en:"appointment",ph:"APOINTMENT"},{it:"incontro",en:"meeting",ph:"MIITING"},{it:"visita",en:"visit",ph:"VISIT"},{it:"libero",en:"free",ph:"FRII"},{it:"occupato",en:"busy",ph:"BIZI"},{it:"disponibile",en:"available",ph:"AVAILABOL"},{it:"urgente",en:"urgent",ph:"ERGENT"},{it:"veloce",en:"fast/quick",ph:"FAST/KUIK"},{it:"lento",en:"slow",ph:"SLOU"},{it:"prossimo",en:"next",ph:"NEXT"},{it:"scorso",en:"last",ph:"LAST"},{it:"questo",en:"this",ph:"DIS"},{it:"puntuale",en:"punctual",ph:"PANCHUOL"}],schedule:[{time:"5 min",color:"",title:"Giorni e mesi",desc:"Impara tutti i giorni della settimana e i 12 mesi. Ripeti ad alta voce."},{time:"5 min",color:"",title:"Orari",desc:"Pratica: The appointment is on Monday at 3 PM. I work from 9 to 6."},{time:"5 min",color:"blue",title:"Preposizioni tempo",desc:"On Monday, in March, at 5 PM - impara quando usare on/in/at."},{time:"5 min",color:"green",title:"Appuntamenti",desc:"Simula chiamata: When are you available? Can we meet on Friday?"}],tips:["ON per giorni (on Monday), IN per mesi/anni (in March, in 2024), AT per ore (at 3 PM)","AM = mattina (ante meridiem), PM = pomeriggio/sera (post meridiem)","It's raining (sta piovendo) - NOT 'is rain'","Next Monday = lunedì prossimo, Last Monday = lunedì scorso"],extra:["Guarda il meteo in inglese: It's sunny today, it will rain tomorrow","Quando fissi appuntamenti con clienti: Are you free on Tuesday at 10 AM?","Leggi l'ora in inglese ogni volta che guardi l'orologio"]},
+
+{num:5,name:"Cibo e ristorante - A1",goal:"Ordinare al ristorante, parlare di gusti, offrire cibo ai clienti. Socializzare in inglese.",words:78,newWords:3,focus:"Menu, bevande, gusti, colazioni business, verbi cucinari",vocab:[{it:"colazione",en:"breakfast",ph:"BREKFAST"},{it:"pranzo",en:"lunch",ph:"LANCH"},{it:"cena",en:"dinner",ph:"DINER"},{it:"spuntino",en:"snack",ph:"SNEK"},{it:"pasto",en:"meal",ph:"MIIL"},{it:"menu",en:"menu",ph:"MENIU"},{it:"piatto",en:"dish/plate",ph:"DISH/PLEIT"},{it:"antipasto",en:"starter/appetizer",ph:"STARTER"},{it:"primo",en:"first course",ph:"FERST KORS"},{it:"secondo",en:"main course",ph:"MEIN KORS"},{it:"contorno",en:"side dish",ph:"SAID DISH"},{it:"dolce",en:"dessert",ph:"DESERT"},{it:"pasta",en:"pasta",ph:"PASTA"},{it:"riso",en:"rice",ph:"RAIS"},{it:"patate",en:"potatoes",ph:"POTEITOUS"},{it:"insalata",en:"salad",ph:"SALAD"},{it:"zuppa",en:"soup",ph:"SUUP"},{it:"formaggio",en:"cheese",ph:"CHIIZ"},{it:"uova",en:"eggs",ph:"EGHZ"},{it:"pollo",en:"chicken",ph:"CHIKEN"},{it:"manzo",en:"beef",ph:"BIIF"},{it:"maiale",en:"pork",ph:"PORK"},{it:"agnello",en:"lamb",ph:"LAM"},{it:"salmone",en:"salmon",ph:"SAMON"},{it:"tonno",en:"tuna",ph:"TIUNNA"},{it:"gamberi",en:"shrimps",ph:"SHRIMPS"},{it:"pomodoro",en:"tomato",ph:"TOMEITO"},{it:"cetriolo",en:"cucumber",ph:"KIUCAMBER"},{it:"cipolla",en:"onion",ph:"ANION"},{it:"aglio",en:"garlic",ph:"GARLIC"},{it:"carota",en:"carrot",ph:"KAROT"},{it:"peperone",en:"pepper",ph:"PEPER"},{it:"melanzana",en:"eggplant",ph:"EGHPLANT"},{it:"zucchina",en:"zucchini",ph:"ZUKIINI"},{it:"banana",en:"banana",ph:"BANANA"},{it:"arancia",en:"orange",ph:"ORINCH"},{it:"limone",en:"lemon",ph:"LEMON"},{it:"fragola",en:"strawberry",ph:"STROBERI"},{it:"uva",en:"grapes",ph:"GREIPS"},{it:"pesca",en:"peach",ph:"PIICH"},{it:"burro",en:"butter",ph:"BATER"},{it:"olio",en:"oil",ph:"OIL"},{it:"sale",en:"salt",ph:"SOLT"},{it:"pepe",en:"pepper",ph:"PEPER"},{it:"zucchero",en:"sugar",ph:"SHUGHER"},{it:"farina",en:"flour",ph:"FLAUER"},{it:"succo",en:"juice",ph:"GIUUS"},{it:"vino",en:"wine",ph:"UAIN"},{it:"birra",en:"beer",ph:"BIIR"},{it:"bibita",en:"soft drink",ph:"SOFT DRINK"},{it:"bottiglia",en:"bottle",ph:"BOTOL"},{it:"bicchiere",en:"glass",ph:"GLAS"},{it:"tazza",en:"cup",ph:"CAP"},{it:"forchetta",en:"fork",ph:"FORK"},{it:"coltello",en:"knife",ph:"NAIF"},{it:"cucchiaio",en:"spoon",ph:"SPUUN"},{it:"tovagliolo",en:"napkin",ph:"NAPKIN"},{it:"conto",en:"bill/check",ph:"BIL/CHEK"},{it:"mancia",en:"tip",ph:"TIP"},{it:"ordinare",en:"order",ph:"ORDER"},{it:"ordino",en:"I order",ph:"AI ORDER"},{it:"scegliere",en:"choose",ph:"CHUUZ"},{it:"scelgo",en:"I choose",ph:"AI CHUUZ"},{it:"preferire",en:"prefer",ph:"PREFER"},{it:"preferisco",en:"I prefer",ph:"AI PREFER"},{it:"piacere",en:"like",ph:"LAIK"},{it:"mi piace",en:"I like",ph:"AI LAIK"},{it:"amare",en:"love",ph:"LAV"},{it:"amo",en:"I love",ph:"AI LAV"},{it:"odiare",en:"hate",ph:"HEIT"},{it:"odio",en:"I hate",ph:"AI HEIT"},{it:"buono",en:"good/tasty",ph:"GUD/TEISTI"},{it:"cattivo",en:"bad",ph:"BED"},{it:"delizioso",en:"delicious",ph:"DILISHOS"},{it:"dolce",en:"sweet",ph:"SUIIT"},{it:"salato",en:"salty",ph:"SOLTI"},{it:"piccante",en:"spicy",ph:"SPAISI"},{it:"amaro",en:"bitter",ph:"BITER"},{it:"fresco",en:"fresh",ph:"FRESH"}],schedule:[{time:"5 min",color:"",title:"Vocabolario cibo",desc:"Studia ingredienti base e piatti. Guarda in cucina e nomina in inglese."},{time:"5 min",color:"",title:"Al ristorante",desc:"Pratica dialogo: Can I have the menu? I'd like pasta. The bill, please."},{time:"5 min",color:"blue",title:"Gusti",desc:"I like chicken, I don't like fish, I prefer wine, I love coffee."},{time:"5 min",color:"green",title:"Colazione business",desc:"Would you like coffee? Do you prefer tea? What do you have for breakfast?"}],tips:["I'd like = I would like (vorrei) - più educato di 'I want'","The bill, please = il conto (UK); The check, please (US)","Food è NON numerabile (NOT 'a food') - dici 'some food'","Breakfast at 7, lunch at 1, dinner at 8 - USA 'at' per orari pasti"],extra:["Quando offri caffè/acqua ai clienti: Would you like some coffee?","Al ristorante con clienti esercita: What would you recommend?","Pensa ai tuoi gusti in inglese: I prefer fish, I don't like spicy food"]},
+
+{num:6,name:"Viaggi e direzioni - A1",goal:"Chiedere e dare indicazioni stradali. Parlare di trasporti. Accompagnare clienti stranieri.",words:78,newWords:3,focus:"Mezzi trasporto, indicazioni strada, luoghi città, verbi movimento",vocab:[{it:"strada",en:"street/road",ph:"STRIIT/ROUD"},{it:"via",en:"street",ph:"STRIIT"},{it:"viale",en:"avenue",ph:"AVENIU"},{it:"piazza",en:"square",ph:"SKUER"},{it:"ponte",en:"bridge",ph:"BRIDG"},{it:"angolo",en:"corner",ph:"CORNER"},{it:"incrocio",en:"crossroads",ph:"KROSROUDZ"},{it:"semaforo",en:"traffic light",ph:"TRAFIC LAIT"},{it:"rotonda",en:"roundabout",ph:"RAUNDABAUT"},{it:"sinistra",en:"left",ph:"LEFT"},{it:"destra",en:"right",ph:"RAIT"},{it:"dritto",en:"straight",ph:"STREIT"},{it:"dietro",en:"behind",ph:"BIHAIND"},{it:"davanti",en:"in front of",ph:"IN FRONT OV"},{it:"accanto",en:"next to",ph:"NEXT TU"},{it:"tra",en:"between",ph:"BITUIN"},{it:"di fronte",en:"opposite",ph:"OPOSIT"},{it:"attraverso",en:"across",ph:"AKROS"},{it:"lungo",en:"along",ph:"ALONG"},{it:"verso",en:"towards",ph:"TUORDZ"},{it:"girare",en:"turn",ph:"TERN"},{it:"giro",en:"I turn",ph:"AI TERN"},{it:"camminare",en:"walk",ph:"UOK"},{it:"cammino",en:"I walk",ph:"AI UOK"},{it:"correre",en:"run",ph:"RAN"},{it:"corro",en:"I run",ph:"AI RAN"},{it:"guidare",en:"drive",ph:"DRAIV"},{it:"guido",en:"I drive",ph:"AI DRAIV"},{it:"fermare",en:"stop",ph:"STOP"},{it:"fermo",en:"I stop",ph:"AI STOP"},{it:"attraversare",en:"cross",ph:"KROS"},{it:"attraverso",en:"I cross",ph:"AI KROS"},{it:"seguire",en:"follow",ph:"FOLOU"},{it:"seguo",en:"I follow",ph:"AI FOLOU"},{it:"auto",en:"car",ph:"KAR"},{it:"taxi",en:"taxi",ph:"TAKSI"},{it:"autobus",en:"bus",ph:"BAS"},{it:"tram",en:"tram",ph:"TRAM"},{it:"treno",en:"train",ph:"TREIN"},{it:"metro",en:"subway/metro",ph:"SABUEI/METRO"},{it:"aereo",en:"plane",ph:"PLEIN"},{it:"nave",en:"ship",ph:"SHIP"},{it:"barca",en:"boat",ph:"BOUT"},{it:"bicicletta",en:"bicycle/bike",ph:"BAISIKOL/BAIK"},{it:"moto",en:"motorcycle",ph:"MOTORSAIKOL"},{it:"fermata",en:"stop",ph:"STOP"},{it:"stazione",en:"station",ph:"STEISHON"},{it:"aeroporto",en:"airport",ph:"ERPORT"},{it:"porto",en:"port/harbor",ph:"PORT/HARBOR"},{it:"parcheggio",en:"parking",ph:"PARKING"},{it:"garage",en:"garage",ph:"GARAG"},{it:"benzina",en:"gas/petrol",ph:"GAS/PETROL"},{it:"biglietto",en:"ticket",ph:"TIKET"},{it:"valigia",en:"suitcase",ph:"SUUTKEIS"},{it:"zaino",en:"backpack",ph:"BAKPAK"},{it:"borsa",en:"bag",ph:"BAG"},{it:"mappa",en:"map",ph:"MAP"},{it:"città",en:"city",ph:"SITI"},{it:"centro",en:"center",ph:"SENTER"},{it:"periferia",en:"suburbs",ph:"SABERBS"},{it:"quartiere",en:"neighborhood",ph:"NEIBERHOOD"},{it:"zona",en:"area",ph:"ERIA"},{it:"paese",en:"village/country",ph:"VILIDG/CANTRI"},{it:"mare",en:"sea",ph:"SII"},{it:"montagna",en:"mountain",ph:"MAUNTIN"},{it:"lago",en:"lake",ph:"LEIK"},{it:"fiume",en:"river",ph:"RIVER"},{it:"parco",en:"park",ph:"PARK"},{it:"giardino",en:"garden",ph:"GARDEN"},{it:"chiesa",en:"church",ph:"CHERCH"},{it:"museo",en:"museum",ph:"MIUZIEM"},{it:"teatro",en:"theater",ph:"THIETER"},{it:"cinema",en:"cinema",ph:"SINEMA"},{it:"ristorante",en:"restaurant",ph:"RESTORANT"},{it:"bar",en:"bar/café",ph:"BAR/KAFEI"},{it:"negozio",en:"shop/store",ph:"SHOP/STOR"},{it:"supermercato",en:"supermarket",ph:"SUPERMARKET"},{it:"farmacia",en:"pharmacy",ph:"FARMASI"},{it:"ospedale",en:"hospital",ph:"HOSPITAL"},{it:"banca",en:"bank",ph:"BANK"},{it:"ufficio postale",en:"post office",ph:"POST OFIS"}],schedule:[{time:"5 min",color:"",title:"Luoghi città",desc:"Impara i luoghi principali: station, airport, park, museum, bank."},{time:"5 min",color:"",title:"Indicazioni base",desc:"Turn left, turn right, go straight, it's on the corner, next to the bank."},{time:"5 min",color:"blue",title:"Mezzi trasporto",desc:"I go by car, by train, by bus, on foot. How do you go to work?"},{time:"5 min",color:"green",title:"Dialogo pratico",desc:"Excuse me, where is the train station? Go straight, turn left."}],tips:["Turn left/right - gira a sinistra/destra (NOT 'to the left')","It's on the left/right - è sulla sinistra/destra (con 'the')","By car/bus/train (con mezzo) ma ON foot (a piedi)","In front of = davanti a (NOT 'in front')"],extra:["Quando accompagni clienti: The apartment is next to the metro station","Pratica direzioni nella tua città: Where is the bank? Turn left...","Pensa al tuo tragitto casa-lavoro in inglese ogni giorno"]},
+
+{num:7,name:"Sentimenti e descrizioni - A1",goal:"Esprimere emozioni, descrivere persone e luoghi. Dare opinioni. Conversazione più ricca.",words:78,newWords:3,focus:"Aggettivi emozioni, carattere, colori, dimensioni, forme",vocab:[{it:"felice",en:"happy",ph:"HAPI"},{it:"triste",en:"sad",ph:"SAD"},{it:"arrabbiato",en:"angry",ph:"ANGRI"},{it:"contento",en:"glad",ph:"GLAD"},{it:"stanco",en:"tired",ph:"TAIRD"},{it:"rilassato",en:"relaxed",ph:"RILAXD"},{it:"stressato",en:"stressed",ph:"STREST"},{it:"nervoso",en:"nervous",ph:"NERVOS"},{it:"preoccupato",en:"worried",ph:"UORID"},{it:"sorpreso",en:"surprised",ph:"SERPRAIZD"},{it:"eccitato",en:"excited",ph:"IKSAITID"},{it:"annoiato",en:"bored",ph:"BORD"},{it:"interessato",en:"interested",ph:"INTERESTID"},{it:"confuso",en:"confused",ph:"CONFIUZD"},{it:"sentire",en:"feel",ph:"FIIL"},{it:"mi sento",en:"I feel",ph:"AI FIIL"},{it:"sembrare",en:"seem",ph:"SIIM"},{it:"sembro",en:"I seem",ph:"AI SIIM"},{it:"piangere",en:"cry",ph:"KRAI"},{it:"piango",en:"I cry",ph:"AI KRAI"},{it:"ridere",en:"laugh",ph:"LAF"},{it:"rido",en:"I laugh",ph:"AI LAF"},{it:"sorridere",en:"smile",ph:"SMAIL"},{it:"sorrido",en:"I smile",ph:"AI SMAIL"},{it:"giovane",en:"young",ph:"IANG"},{it:"adulto",en:"adult",ph:"ADALT"},{it:"anziano",en:"old/elderly",ph:"OULD/ELDERLI"},{it:"alto",en:"tall",ph:"TOL"},{it:"basso",en:"short",ph:"SHORT"},{it:"magro",en:"thin",ph:"THIN"},{it:"grasso",en:"fat",ph:"FAT"},{it:"forte",en:"strong",ph:"STRONG"},{it:"debole",en:"weak",ph:"UIIK"},{it:"intelligente",en:"intelligent",ph:"INTELIGENT"},{it:"stupido",en:"stupid",ph:"STIUPID"},{it:"gentile",en:"kind",ph:"KAIND"},{it:"scortese",en:"rude",ph:"RUUD"},{it:"educato",en:"polite",ph:"POLAIT"},{it:"simpatico",en:"nice/friendly",ph:"NAIS/FRENDLI"},{it:"antipatico",en:"unpleasant",ph:"ANPLEZANT"},{it:"onesto",en:"honest",ph:"ONEST"},{it:"disonesto",en:"dishonest",ph:"DISONEST"},{it:"coraggioso",en:"brave",ph:"BREIV"},{it:"timido",en:"shy",ph:"SHAI"},{it:"sicuro",en:"confident",ph:"CONFIDENT"},{it:"insicuro",en:"insecure",ph:"INSECHIUR"},{it:"paziente",en:"patient",ph:"PEISHENT"},{it:"impaziente",en:"impatient",ph:"IMPEISHENT"},{it:"generoso",en:"generous",ph:"GENEROS"},{it:"egoista",en:"selfish",ph:"SELFISH"},{it:"attivo",en:"active",ph:"AKTIV"},{it:"pigro",en:"lazy",ph:"LEIZI"},{it:"colore",en:"color",ph:"KALER"},{it:"bianco",en:"white",ph:"UAIT"},{it:"nero",en:"black",ph:"BLAK"},{it:"rosso",en:"red",ph:"RED"},{it:"blu",en:"blue",ph:"BLUU"},{it:"verde",en:"green",ph:"GRIIN"},{it:"giallo",en:"yellow",ph:"IELOU"},{it:"arancione",en:"orange",ph:"ORINCH"},{it:"rosa",en:"pink",ph:"PINK"},{it:"viola",en:"purple",ph:"PERPOL"},{it:"marrone",en:"brown",ph:"BRAUN"},{it:"grigio",en:"grey",ph:"GREI"},{it:"chiaro",en:"light",ph:"LAIT"},{it:"scuro",en:"dark",ph:"DARK"},{it:"luminoso",en:"bright",ph:"BRAIT"},{it:"opaco",en:"dull",ph:"DAL"},{it:"pulito",en:"clean",ph:"KLIIN"},{it:"sporco",en:"dirty",ph:"DERTI"},{it:"ordinato",en:"tidy",ph:"TAIDI"},{it:"disordinato",en:"messy",ph:"MESI"},{it:"comodo",en:"comfortable",ph:"CAMFORTABOL"},{it:"scomodo",en:"uncomfortable",ph:"ANCAMFORTABOL"},{it:"moderno",en:"modern",ph:"MODERN"},{it:"antico",en:"ancient",ph:"EINSHENT"},{it:"interessante",en:"interesting",ph:"INTRESTING"},{it:"noioso",en:"boring",ph:"BORING"}],schedule:[{time:"5 min",color:"",title:"Emozioni base",desc:"Happy, sad, tired, worried - descrivi come ti senti oggi."},{time:"5 min",color:"",title:"Descrivere persone",desc:"He is tall and strong. She is young and friendly. Pratica con foto."},{time:"5 min",color:"blue",title:"Colori e forme",desc:"The house is white. The sofa is brown. This apartment is modern."},{time:"5 min",color:"green",title:"Opinioni",desc:"I think it's interesting. It seems beautiful. I feel happy about this."}],tips:["I'm happy (sono felice) - aggettivo con 'be', NOT 'I'm happy person'","He seems tired = sembra stanco (opinione esterna)","Interested IN something (NOT 'interested for')","People ARE interested, things ARE interesting (participi)"],extra:["Descrivi i clienti mentalmente in inglese: He is tall, she seems interested","Quando vedi un appartamento: This is modern, that is comfortable, it's bright","Esprimi le tue emozioni in inglese durante il giorno: I feel tired, I'm happy"]},
+
+{num:8,name:"Raccontare al passato - A1",goal:"Descrivere cosa è successo. Parlare di esperienze passate. Base per raccontare storie.",words:78,newWords:3,focus:"Past simple verbi regolari/irregolari, was/were, yesterday/ago",vocab:[{it:"ero",en:"I was",ph:"AI UOZ"},{it:"eri",en:"you were",ph:"IU UER"},{it:"era",en:"he/she was",ph:"HII/SHII UOZ"},{it:"eravamo",en:"we were",ph:"UI UER"},{it:"erano",en:"they were",ph:"DEI UER"},{it:"avevo",en:"I had",ph:"AI HAD"},{it:"andai",en:"I went",ph:"AI UENT"},{it:"venni",en:"I came",ph:"AI KEIM"},{it:"vidi",en:"I saw",ph:"AI SO"},{it:"feci",en:"I did/made",ph:"AI DID/MEID"},{it:"dissi",en:"I said",ph:"AI SED"},{it:"presi",en:"I took",ph:"AI TUK"},{it:"diedi",en:"I gave",ph:"AI GHEIV"},{it:"comprai",en:"I bought",ph:"AI BOT"},{it:"vendei",en:"I sold",ph:"AI SOULD"},{it:"mangiai",en:"I ate",ph:"AI EIT"},{it:"bevvi",en:"I drank",ph:"AI DRANK"},{it:"parlai",en:"I spoke",ph:"AI SPOUK"},{it:"pensai",en:"I thought",ph:"AI THOT"},{it:"trovai",en:"I found",ph:"AI FAUND"},{it:"lasciai",en:"I left",ph:"AI LEFT"},{it:"arrivai",en:"I arrived",ph:"AI ARAIVD"},{it:"partii",en:"I left",ph:"AI LEFT"},{it:"scrissi",en:"I wrote",ph:"AI ROUT"},{it:"lessi",en:"I read",ph:"AI RED"},{it:"capii",en:"I understood",ph:"AI ANDERSTUD"},{it:"conobbi",en:"I met",ph:"AI MET"},{it:"seppi",en:"I knew",ph:"AI NIU"},{it:"potei",en:"I could",ph:"AI CUD"},{it:"volli",en:"I wanted",ph:"AI UONTID"},{it:"iniziai",en:"I started",ph:"AI STARTED"},{it:"finii",en:"I finished",ph:"AI FINISHD"},{it:"lavorai",en:"I worked",ph:"AI UORKT"},{it:"visita passata",en:"I visited",ph:"AI VIZITID"},{it:"chiamai",en:"I called",ph:"AI KOLD"},{it:"risposi",en:"I answered",ph:"AI ANSERD"},{it:"chiesi",en:"I asked",ph:"AI ASKT"},{it:"aiutai",en:"I helped",ph:"AI HELPT"},{it:"usai",en:"I used",ph:"AI IUZD"},{it:"aprii",en:"I opened",ph:"AI OUPEND"},{it:"chiusi",en:"I closed",ph:"AI KLOUZD"},{it:"aspettai",en:"I waited",ph:"AI UEITID"},{it:"cambiai",en:"I changed",ph:"AI CHEINGD"},{it:"mostrai",en:"I showed",ph:"AI SHOUD"},{it:"cercai",en:"I looked for",ph:"AI LUKT FOR"},{it:"ascoltai",en:"I listened",ph:"AI LISEND"},{it:"provai",en:"I tried",ph:"AI TRAID"},{it:"credetti",en:"I believed",ph:"AI BILIIVD"},{it:"ricordai",en:"I remembered",ph:"AI RIMEMBERD"},{it:"dimenticai",en:"I forgot",ph:"AI FORGOT"},{it:"scelsi",en:"I chose",ph:"AI CHOUZ"},{it:"piacque",en:"I liked",ph:"AI LAIKT"},{it:"preferii",en:"I preferred",ph:"AI PREFERD"},{it:"succedere",en:"happen",ph:"HAPEN"},{it:"successe",en:"it happened",ph:"IT HAPEND"},{it:"momento",en:"moment",ph:"MOMENT"},{it:"volta",en:"time",ph:"TAIM"},{it:"prima volta",en:"first time",ph:"FERST TAIM"},{it:"ultima volta",en:"last time",ph:"LAST TAIM"},{it:"fa (tempo)",en:"ago",ph:"AGOU"},{it:"scorso",en:"last",ph:"LAST"},{it:"passato",en:"past",ph:"PAST"},{it:"storia",en:"story",ph:"STORI"},{it:"esperienza",en:"experience",ph:"EXPERIENS"},{it:"problema",en:"problem",ph:"PROBLEM"},{it:"soluzione",en:"solution",ph:"SOLIUSHON"},{it:"domanda",en:"question",ph:"KUESCHON"},{it:"risposta",en:"answer",ph:"ANSER"},{it:"idea",en:"idea",ph:"AIDIA"},{it:"decisione",en:"decision",ph:"DISISHON"},{it:"scelta",en:"choice",ph:"CHOIS"},{it:"opportunità",en:"opportunity",ph:"OPORTIUNITI"},{it:"possibilità",en:"possibility",ph:"POSIBILITI"},{it:"probabilità",en:"probability",ph:"PROBABILITI"},{it:"caso",en:"case",ph:"KEIS"}],schedule:[{time:"5 min",color:"",title:"Verbi passato",desc:"Studia i passati irregolari: went, came, saw, did, said, took, gave."},{time:"5 min",color:"",title:"Was/Were",desc:"I was at home. You were there. He was tired. They were happy."},{time:"5 min",color:"blue",title:"Racconta ieri",desc:"Yesterday I worked, I met a client, I showed an apartment."},{time:"5 min",color:"green",title:"Ago",desc:"Two days ago, a week ago, last month, last year. Cosa hai fatto?"}],tips:["Verbi regolari: work→worked, visit→visited, call→called (aggiungi -ed)","Verbi irregolari: go→went, see→saw, do→did (impara a memoria)","Ago = fa (Two days ago = due giorni fa) - DOPO il numero","Yesterday, last week, last month - NON servono preposizioni"],extra:["Ogni sera racconta la giornata in inglese: Today I worked, I met clients...","Con i clienti: When did you arrive? Did you see the apartment?","Pensa agli eventi passati: Last week I sold a house, yesterday I was busy"]},
+
+{num:9,name:"Progetti e futuro - A1",goal:"Parlare di piani, previsioni, intenzioni. Organizzare il futuro con i clienti.",words:78,newWords:3,focus:"Will/going to, futuro, progetti, speranze, intenzioni",vocab:[{it:"sarò",en:"I will be",ph:"AI UIL BII"},{it:"sarai",en:"you will be",ph:"IU UIL BII"},{it:"sarà",en:"he/she will be",ph:"HII/SHII UIL BII"},{it:"avrò",en:"I will have",ph:"AI UIL HEV"},{it:"andrò",en:"I will go",ph:"AI UIL GOU"},{it:"farò",en:"I will do",ph:"AI UIL DU"},{it:"sto per andare",en:"I'm going to go",ph:"AIM GOUING TU GOU"},{it:"sto per fare",en:"I'm going to do",ph:"AIM GOUING TU DU"},{it:"lavorerò",en:"I will work",ph:"AI UIL UORK"},{it:"venderò",en:"I will sell",ph:"AI UIL SEL"},{it:"comprerò",en:"I will buy",ph:"AI UIL BAI"},{it:"incontrerò",en:"I will meet",ph:"AI UIL MIIT"},{it:"chiamerò",en:"I will call",ph:"AI UIL KOL"},{it:"scriverò",en:"I will write",ph:"AI UIL RAIT"},{it:"manderò",en:"I will send",ph:"AI UIL SEND"},{it:"riceverò",en:"I will receive",ph:"AI UIL RISIIV"},{it:"cercherò",en:"I will look for",ph:"AI UIL LUK FOR"},{it:"troverò",en:"I will find",ph:"AI UIL FAIND"},{it:"mostrerò",en:"I will show",ph:"AI UIL SHOU"},{it:"spiegherò",en:"I will explain",ph:"AI UIL IXPLEIN"},{it:"deciderò",en:"I will decide",ph:"AI UIL DISAID"},{it:"proverò",en:"I will try",ph:"AI UIL TRAI"},{it:"cambierò",en:"I will change",ph:"AI UIL CHEINCH"},{it:"tornerò",en:"I will return",ph:"AI UIL RITERN"},{it:"resterò",en:"I will stay",ph:"AI UIL STEI"},{it:"aspetterò",en:"I will wait",ph:"AI UIL UEIT"},{it:"continuerò",en:"I will continue",ph:"AI UIL CONTINIUU"},{it:"finirò",en:"I will finish",ph:"AI UIL FINISH"},{it:"inizierò",en:"I will start",ph:"AI UIL START"},{it:"futuro",en:"future",ph:"FIUCHER"},{it:"domani",en:"tomorrow",ph:"TOMOROU"},{it:"dopodomani",en:"day after tomorrow",ph:"DEI AFTER TOMOROU"},{it:"prossimo",en:"next",ph:"NEXT"},{it:"settimana prossima",en:"next week",ph:"NEXT UIIK"},{it:"mese prossimo",en:"next month",ph:"NEXT MANTH"},{it:"anno prossimo",en:"next year",ph:"NEXT IIIR"},{it:"presto",en:"soon",ph:"SUUN"},{it:"fra poco",en:"in a while",ph:"IN A UAIL"},{it:"più tardi",en:"later",ph:"LEITER"},{it:"piano",en:"plan",ph:"PLAN"},{it:"progetto",en:"project",ph:"PROGEKT"},{it:"programma",en:"program",ph:"PROUGRAM"},{it:"obiettivo",en:"goal",ph:"GOUL"},{it:"scopo",en:"aim/purpose",ph:"EIM/PERPOS"},{it:"intenzione",en:"intention",ph:"INTENSHON"},{it:"speranza",en:"hope",ph:"HOUP"},{it:"spero",en:"I hope",ph:"AI HOUP"},{it:"desiderio",en:"wish",ph:"UISH"},{it:"desidero",en:"I wish",ph:"AI UISH"},{it:"sogno",en:"dream",ph:"DRIIM"},{it:"sogno (verbo)",en:"I dream",ph:"AI DRIIM"},{it:"promessa",en:"promise",ph:"PROMIS"},{it:"prometto",en:"I promise",ph:"AI PROMIS"},{it:"consiglio",en:"advice",ph:"ADVAIS"},{it:"consiglio (verbo)",en:"I advise",ph:"AI ADVAIZ"},{it:"suggerimento",en:"suggestion",ph:"SAGESTCHON"},{it:"suggerisco",en:"I suggest",ph:"AI SAGEST"},{it:"previsione",en:"forecast",ph:"FORKAST"},{it:"probabilmente",en:"probably",ph:"PROBABLI"},{it:"sicuramente",en:"certainly",ph:"SERTENLI"},{it:"forse",en:"maybe/perhaps",ph:"MEIBI/PERHAPS"},{it:"sperare",en:"hope",ph:"HOUP"},{it:"immaginare",en:"imagine",ph:"IMACHIN"},{it:"immagino",en:"I imagine",ph:"AI IMACHIN"},{it:"pianificare",en:"plan",ph:"PLAN"},{it:"pianifico",en:"I plan",ph:"AI PLAN"},{it:"preparare",en:"prepare",ph:"PRIPER"},{it:"preparo",en:"I prepare",ph:"AI PRIPER"},{it:"organizzare",en:"organize",ph:"ORGANAIZ"},{it:"organizzo",en:"I organize",ph:"AI ORGANAIZ"},{it:"accordo",en:"agreement",ph:"AGRIIMENT"},{it:"contratto",en:"contract",ph:"KONTRAKT"},{it:"appuntamento futuro",en:"appointment",ph:"APOINTMENT"},{it:"riunione",en:"meeting",ph:"MIITING"},{it:"evento",en:"event",ph:"IVENT"},{it:"occasione",en:"occasion",ph:"OKEIJON"},{it:"opportunità",en:"chance",ph:"CHANS"}],schedule:[{time:"5 min",color:"",title:"Will base",desc:"I will go, you will see, he will come - forma affermativa."},{time:"5 min",color:"",title:"Going to",desc:"I'm going to buy, she's going to call - piani già decisi."},{time:"5 min",color:"blue",title:"Differenza will/going to",desc:"Will = decisioni al momento. Going to = piani già fatti."},{time:"5 min",color:"green",title:"Parla dei tuoi piani",desc:"Tomorrow I will work. Next week I'm going to visit Milan."}],tips:["Will = decisioni immediate ('I will help you' appena deciso)","Going to = piani già fatti ('I'm going to visit Rome next week')","Tomorrow, next week, next month - futuro semplice","I hope + present (I hope you are well) o future (I hope it will rain)"],extra:["Quando fissi appuntamenti: I will call you tomorrow, we will meet next week","Con i clienti: When will you decide? I'm going to show you another apartment","Ogni sera pianifica in inglese: Tomorrow I will meet clients, I'm going to work"]},
+
+{num:10,name:"Lavoro e ufficio - A1",goal:"Vocabolario professionale generico. Base per passare all'immobiliare specializzato.",words:78,newWords:3,focus:"Ufficio, documenti, tecnologia, email, professioni",vocab:[{it:"lavoro (job)",en:"job",ph:"DGOB"},{it:"lavoro (work)",en:"work",ph:"UORK"},{it:"ufficio",en:"office",ph:"OFIS"},{it:"azienda",en:"company",ph:"CAMPANI"},{it:"impresa",en:"business",ph:"BIZNES"},{it:"ditta",en:"firm",ph:"FERM"},{it:"capo",en:"boss",ph:"BOS"},{it:"collega",en:"colleague",ph:"KOLIIG"},{it:"cliente",en:"client",ph:"KLAIENT"},{it:"cliente (customer)",en:"customer",ph:"KASTOMER"},{it:"dipendente",en:"employee",ph:"EMPLOII"},{it:"datore di lavoro",en:"employer",ph:"EMPLOIER"},{it:"segretaria",en:"secretary",ph:"SECRETARI"},{it:"manager",en:"manager",ph:"MENEGER"},{it:"direttore",en:"director",ph:"DIREKTOR"},{it:"professione",en:"profession",ph:"PROFESHON"},{it:"stipendio",en:"salary",ph:"SALARI"},{it:"soldi",en:"money",ph:"MANI"},{it:"prezzo",en:"price",ph:"PRAIS"},{it:"costo",en:"cost",ph:"KOST"},{it:"valore",en:"value",ph:"VALIU"},{it:"mercato",en:"market",ph:"MARKET"},{it:"vendita",en:"sale",ph:"SEIL"},{it:"acquisto",en:"purchase",ph:"PERCHAS"},{it:"affare",en:"deal",ph:"DIIL"},{it:"offerta",en:"offer",ph:"OFER"},{it:"sconto",en:"discount",ph:"DISKAUNT"},{it:"fattura",en:"invoice",ph:"INVOIS"},{it:"ricevuta",en:"receipt",ph:"RISIIT"},{it:"documento",en:"document",ph:"DOKIUMENT"},{it:"carta",en:"paper",ph:"PEIPER"},{it:"modulo",en:"form",ph:"FORM"},{it:"firma",en:"signature",ph:"SIGNACHER"},{it:"firmare",en:"sign",ph:"SAIN"},{it:"firmo",en:"I sign",ph:"AI SAIN"},{it:"contratto",en:"contract",ph:"KONTRAKT"},{it:"accordo",en:"agreement",ph:"AGRIIMENT"},{it:"condizione",en:"condition",ph:"KONDISHON"},{it:"clausola",en:"clause",ph:"KLOZ"},{it:"scadenza",en:"deadline",ph:"DEDLAIN"},{it:"data",en:"date",ph:"DEIT"},{it:"informazione",en:"information",ph:"INFORMEISHON"},{it:"notizia",en:"news",ph:"NIUZ"},{it:"messaggio",en:"message",ph:"MESIDG"},{it:"email",en:"email",ph:"IIIMEIL"},{it:"telefono",en:"phone",ph:"FOUN"},{it:"cellulare",en:"mobile",ph:"MOBAIL"},{it:"numero",en:"number",ph:"NAMBER"},{it:"indirizzo",en:"address",ph:"ADRES"},{it:"sito web",en:"website",ph:"UEBSAIT"},{it:"internet",en:"internet",ph:"INTERNET"},{it:"computer",en:"computer",ph:"COMPIUTER"},{it:"tastiera",en:"keyboard",ph:"KIIBORD"},{it:"mouse",en:"mouse",ph:"MAUS"},{it:"schermo",en:"screen",ph:"SKRIIN"},{it:"stampante",en:"printer",ph:"PRINTER"},{it:"file",en:"file",ph:"FAIL"},{it:"cartella",en:"folder",ph:"FOULDER"},{it:"allegato",en:"attachment",ph:"ATACHMENT"},{it:"inviare",en:"send",ph:"SEND"},{it:"ricevere",en:"receive",ph:"RISIIV"},{it:"rispondere",en:"reply",ph:"RIPLAI"},{it:"inoltrare",en:"forward",ph:"FORUORD"},{it:"stampare",en:"print",ph:"PRINT"},{it:"copiare",en:"copy",ph:"KOPI"},{it:"cancellare",en:"delete",ph:"DILIIT"},{it:"salvare",en:"save",ph:"SEIV"},{it:"aprire",en:"open",ph:"OUPEN"},{it:"chiudere",en:"close",ph:"KLOUZ"},{it:"confermare",en:"confirm",ph:"CONFERM"},{it:"annullare",en:"cancel",ph:"KANSEL"},{it:"progetto",en:"project",ph:"PROGEKT"},{it:"compito",en:"task",ph:"TASK"},{it:"riunione",en:"meeting",ph:"MIITING"},{it:"presentazione",en:"presentation",ph:"PRESENTEISHON"},{it:"rapporto",en:"report",ph:"RIPORT"},{it:"risultato",en:"result",ph:"RIZALT"}],schedule:[{time:"5 min",color:"",title:"Ufficio base",desc:"Office, company, boss, colleague, client, employee - termini generali."},{time:"5 min",color:"",title:"Documenti",desc:"Document, contract, invoice, signature, form - cosa usi ogni giorno."},{time:"5 min",color:"blue",title:"Email",desc:"Send, receive, reply, forward, attachment - scrivi email in inglese."},{time:"5 min",color:"green",title:"Frasi professionali",desc:"I will send you the document. Please sign here. The meeting is tomorrow."}],tips:["Client (cliente professionale), Customer (cliente negozio)","Email senza articolo: I send an email (NOT 'I send email')","Information è NON numerabile (some information, NOT 'an information')","Job interview = colloquio di lavoro, NOT 'work interview'"],extra:["Scrivi email in inglese ai clienti stranieri anche se brevi","Quando lavori pensa in inglese: I need to send the document, call the client","Descrivi il tuo lavoro: I work in a real estate company, I sell apartments"]},
+
+{num:11,name:"Immobiliare base - A2",goal:"Vocabolario immobiliare fondamentale. Descrivere proprietà, caratteristiche, posizione.",words:150,newWords:5,focus:"Tipi proprietà, stanze, caratteristiche, posizione, prezzi",vocab:[{it:"proprietà",en:"property",ph:"PROPERTI"},{it:"immobile",en:"real estate",ph:"RIIL ISTEIT"},{it:"casa",en:"home",ph:"HOUM"},{it:"abitazione",en:"residence",ph:"REZIDENS"},{it:"appartamento",en:"apartment",ph:"APARTMENT"},{it:"attico",en:"penthouse",ph:"PENTHAUS"},{it:"monolocale",en:"studio",ph:"STUDIOU"},{it:"bilocale",en:"one-bedroom apartment",ph:"UAN-BEDRUM"},{it:"trilocale",en:"two-bedroom apartment",ph:"TU-BEDRUM"},{it:"villa",en:"villa",ph:"VILA"},{it:"villetta",en:"townhouse",ph:"TAUNHAUS"},{it:"rustico",en:"rustic house",ph:"RASTIK HAUS"},{it:"loft",en:"loft",ph:"LOFT"},{it:"piano terra",en:"ground floor",ph:"GRAUND FLOR"},{it:"primo piano",en:"first floor",ph:"FERST FLOR"},{it:"ultimo piano",en:"top floor",ph:"TOP FLOR"},{it:"mansarda",en:"attic",ph:"ATIK"},{it:"seminterrato",en:"basement",ph:"BEISMENT"},{it:"cantina",en:"cellar",ph:"SELER"},{it:"taverna",en:"tavern",ph:"TAVERN"},{it:"garage",en:"garage",ph:"GARAG"},{it:"box auto",en:"parking space",ph:"PARKING SPEIS"},{it:"posto auto",en:"parking spot",ph:"PARKING SPOT"},{it:"camera da letto",en:"bedroom",ph:"BEDRUM"},{it:"camera matrimoniale",en:"master bedroom",ph:"MASTER BEDRUM"},{it:"camera singola",en:"single bedroom",ph:"SINGOL BEDRUM"},{it:"bagno",en:"bathroom",ph:"BATHRUM"},{it:"bagno padronale",en:"ensuite bathroom",ph:"ENSUIIT BATHRUM"},{it:"mezzo bagno",en:"half bath",ph:"HAF BATH"},{it:"cucina",en:"kitchen",ph:"KICEN"},{it:"cucinotto",en:"kitchenette",ph:"KICHENET"},{it:"cucina abitabile",en:"eat-in kitchen",ph:"IIT-IN KICEN"},{it:"soggiorno",en:"living room",ph:"LIVING RUUM"},{it:"sala pranzo",en:"dining room",ph:"DINING RUUM"},{it:"salone",en:"lounge",ph:"LAUNDG"},{it:"studio",en:"study",ph:"STADI"},{it:"ripostiglio",en:"closet",ph:"KLOZET"},{it:"guardaroba",en:"wardrobe",ph:"UORDROB"},{it:"terrazzo",en:"terrace",ph:"TERAS"},{it:"balcone",en:"balcony",ph:"BALKONI"},{it:"giardino",en:"garden",ph:"GARDEN"},{it:"cortile",en:"courtyard",ph:"KORTIARD"},{it:"veranda",en:"veranda",ph:"VERANDA"},{it:"portico",en:"porch",ph:"PORCH"},{it:"ingresso",en:"entrance",ph:"ENTRANS"},{it:"corridoio",en:"hallway",ph:"HOLUEI"},{it:"scala",en:"stairs",ph:"STERZ"},{it:"ascensore",en:"elevator",ph:"ELEVEITOR"},{it:"portineria",en:"concierge",ph:"KONSIERGE"},{it:"portiere",en:"doorman",ph:"DORMAN"},{it:"condominio",en:"condominium",ph:"KONDOMINIUM"},{it:"palazzo",en:"building",ph:"BILDING"},{it:"edificio",en:"building",ph:"BILDING"},{it:"costruzione",en:"construction",ph:"KONSTRAKSHON"},{it:"anno costruzione",en:"year built",ph:"IIIR BILT"},{it:"ristrutturato",en:"renovated",ph:"RENOVEITED"},{it:"nuovo",en:"new",ph:"NIU"},{it:"usato",en:"used",ph:"IUZD"},{it:"da ristrutturare",en:"needs renovation",ph:"NIIDS RENOVEISHON"},{it:"abitabile",en:"habitable",ph:"HABITABOL"},{it:"arredato",en:"furnished",ph:"FERNISHD"},{it:"semi-arredato",en:"semi-furnished",ph:"SEMI-FERNISHD"},{it:"non arredato",en:"unfurnished",ph:"ANFERNISHD"},{it:"libero",en:"vacant",ph:"VEIKANT"},{it:"occupato",en:"occupied",ph:"OKIUPAID"},{it:"disponibile",en:"available",ph:"AVAILABOL"},{it:"venduto",en:"sold",ph:"SOULD"},{it:"affittato",en:"rented",ph:"RENTID"},{it:"metri quadri",en:"square meters",ph:"SKUER MIITERZ"},{it:"superficie",en:"surface area",ph:"SERFIS ERIA"},{it:"dimensione",en:"size",ph:"SAIZ"},{it:"ampio",en:"spacious",ph:"SPEISHOS"},{it:"spazioso",en:"roomy",ph:"RUUMI"},{it:"luminoso",en:"bright",ph:"BRAIT"},{it:"buio",en:"dark",ph:"DARK"},{it:"soleggiato",en:"sunny",ph:"SANI"},{it:"silenzioso",en:"quiet",ph:"KUAIET"},{it:"rumoroso",en:"noisy",ph:"NOIZI"},{it:"panoramico",en:"panoramic",ph:"PANORAMIK"},{it:"vista",en:"view",ph:"VIUU"},{it:"vista mare",en:"sea view",ph:"SII VIUU"},{it:"vista città",en:"city view",ph:"SITI VIUU"},{it:"vista giardino",en:"garden view",ph:"GARDEN VIUU"},{it:"esposizione",en:"exposure",ph:"EXPOUGHER"},{it:"nord",en:"north",ph:"NORTH"},{it:"sud",en:"south",ph:"SAUTH"},{it:"est",en:"east",ph:"IIST"},{it:"ovest",en:"west",ph:"UEST"},{it:"doppia esposizione",en:"dual exposure",ph:"DIUAL EXPOUGHER"},{it:"piano alto",en:"high floor",ph:"HAI FLOR"},{it:"piano basso",en:"low floor",ph:"LOU FLOR"},{it:"fronte strada",en:"street-facing",ph:"STRIIT-FEISING"},{it:"interno",en:"courtyard-facing",ph:"KORTIARD-FEISING"},{it:"riscaldamento",en:"heating",ph:"HIITING"},{it:"climatizzazione",en:"air conditioning",ph:"ER CONDISHONING"},{it:"riscaldamento autonomo",en:"independent heating",ph:"INDEPENDENT HIITING"},{it:"riscaldamento centralizzato",en:"central heating",ph:"SENTRAL HIITING"},{it:"infissi",en:"fixtures",ph:"FIKSCHERS"},{it:"finestre",en:"windows",ph:"UINDOUZ"},{it:"doppi vetri",en:"double glazing",ph:"DABOL GLEIZING"},{it:"porte",en:"doors",ph:"DORZ"},{it:"pavimento",en:"flooring",ph:"FLORING"},{it:"parquet",en:"parquet",ph:"PARKET"},{it:"piastrelle",en:"tiles",ph:"TAILZ"},{it:"marmo",en:"marble",ph:"MARBOL"},{it:"moquette",en:"carpet",ph:"KARPET"},{it:"soffitto",en:"ceiling",ph:"SIILING"},{it:"soffitto alto",en:"high ceiling",ph:"HAI SIILING"},{it:"pareti",en:"walls",ph:"UOLZ"},{it:"muro",en:"wall",ph:"UOL"},{it:"impianto elettrico",en:"electrical system",ph:"ILEKTRIKAL SISTEM"},{it:"impianto idraulico",en:"plumbing",ph:"PLAMING"},{it:"tubature",en:"pipes",ph:"PAIPS"},{it:"caldaia",en:"boiler",ph:"BOILER"},{it:"contatore",en:"meter",ph:"MIITER"},{it:"utenze",en:"utilities",ph:"IUTILITIS"},{it:"acqua",en:"water",ph:"UOTER"},{it:"gas",en:"gas",ph:"GAS"},{it:"luce",en:"electricity",ph:"ILEKTRISITI"},{it:"spese condominiali",en:"condo fees",ph:"KONDO FIIZ"},{it:"manutenzione",en:"maintenance",ph:"MEINTINANS"},{it:"stato",en:"condition",ph:"KONDISHON"},{it:"stato ottimo",en:"excellent condition",ph:"EKSELENT KONDISHON"},{it:"buono stato",en:"good condition",ph:"GUD KONDISHON"},{it:"da ristrutturare",en:"needs work",ph:"NIIDS UORK"},{it:"posizione",en:"location",ph:"LOKEISHON"},{it:"zona",en:"area",ph:"ERIA"},{it:"quartiere",en:"neighborhood",ph:"NEIBERHOOD"},{it:"centro",en:"downtown",ph:"DAUNTAUN"},{it:"centro città",en:"city center",ph:"SITI SENTER"},{it:"periferia",en:"suburbs",ph:"SABERBS"},{it:"vicinanze",en:"vicinity",ph:"VISINITI"},{it:"comodo",en:"convenient",ph:"CONVINIIENT"},{it:"ben servito",en:"well-connected",ph:"UEL-KONEKTID"},{it:"isolato",en:"secluded",ph:"SIKLUUDID"}],schedule:[{time:"6 min",color:"",title:"Tipi proprietà",desc:"Apartment, penthouse, studio, villa, townhouse - tipi immobili."},{time:"6 min",color:"",title:"Stanze e spazi",desc:"Bedroom, bathroom, kitchen, terrace, balcony, garage - descrivi layout."},{time:"6 min",color:"blue",title:"Caratteristiche",desc:"Bright, spacious, renovated, furnished, view - aggettivi chiave."},{time:"7 min",color:"green",title:"Descrivi proprietà",desc:"This apartment has 3 bedrooms, 2 bathrooms, a terrace with sea view."}],tips:["Square meters (mq) - in USA usano square feet, UK square metres","Furnished = arredato, Unfurnished = vuoto, Semi-furnished = parziale","View è numerabile: a view (una vista), beautiful views (belle viste)","Ground floor (UK) = piano terra, First floor (US) = piano terra"],extra:["Descrivi ogni immobile in inglese: This property is a bright apartment...","Con clienti: The apartment is on the third floor, it has a terrace","Pensa alle caratteristiche: spacious living room, renovated kitchen, sea view"]},
+
+{num:12,name:"Immobiliare avanzato - A2",goal:"Contratti, trattative, documentazione. Terminare transazioni con clienti stranieri.",words:151,newWords:5,focus:"Contratti, prezzi, trattative, documenti, transazioni",vocab:[{it:"vendita",en:"sale",ph:"SEIL"},{it:"vendere",en:"sell",ph:"SEL"},{it:"venditore",en:"seller",ph:"SELER"},{it:"comprare",en:"buy",ph:"BAI"},{it:"compratore",en:"buyer",ph:"BAIER"},{it:"acquirente",en:"purchaser",ph:"PERCHASER"},{it:"acquisto",en:"purchase",ph:"PERCHAS"},{it:"transazione",en:"transaction",ph:"TRANSAKSHEN"},{it:"affare",en:"deal",ph:"DIIL"},{it:"trattativa",en:"negotiation",ph:"NIGOUSIEISHEN"},{it:"negoziare",en:"negotiate",ph:"NIGOUSHEIT"},{it:"offerta",en:"offer",ph:"OFER"},{it:"proposta",en:"proposal",ph:"PROPOUZEL"},{it:"controproposta",en:"counteroffer",ph:"KAUNTEROFER"},{it:"prezzo richiesto",en:"asking price",ph:"ASKING PRAIS"},{it:"prezzo vendita",en:"selling price",ph:"SELING PRAIS"},{it:"prezzo finale",en:"final price",ph:"FAINAL PRAIS"},{it:"valore mercato",en:"market value",ph:"MARKET VALIU"},{it:"valutazione",en:"appraisal",ph:"APREIZOL"},{it:"stima",en:"estimate",ph:"ESTIMEIT"},{it:"caparra",en:"deposit",ph:"DIPOSIT"},{it:"acconto",en:"down payment",ph:"DAUN PEIMENT"},{it:"saldo",en:"balance",ph:"BALANS"},{it:"pagamento",en:"payment",ph:"PEIMENT"},{it:"rata",en:"installment",ph:"INSTALM
+ENT"},{it:"mutuo",en:"mortgage",ph:"MORGIDG"},{it:"prestito",en:"loan",ph:"LOUN"},{it:"finanziamento",en:"financing",ph:"FINANSING"},{it:"banca",en:"bank",ph:"BANK"},{it:"tasso interesse",en:"interest rate",ph:"INTEREST REIT"},{it:"interessi",en:"interest",ph:"INTEREST"},{it:"contratto",en:"contract",ph:"KONTRAKT"},{it:"accordo",en:"agreement",ph:"AGRIIMENT"},{it:"preliminare",en:"preliminary contract",ph:"PRELIMINARI KONTRAKT"},{it:"compromesso",en:"sales agreement",ph:"SEILZ AGRIIMENT"},{it:"rogito",en:"deed of sale",ph:"DIID OV SEIL"},{it:"atto",en:"deed",ph:"DIID"},{it:"notaio",en:"notary",ph:"NOUTARI"},{it:"avvocato",en:"lawyer",ph:"LOIER"},{it:"legale",en:"legal",ph:"LIIGOL"},{it:"agente immobiliare",en:"real estate agent",ph:"RIIL ISTEIT EIGENT"},{it:"agenzia",en:"agency",ph:"EIGENSI"},{it:"mediatore",en:"broker",ph:"BROUKE"},{it:"commissione",en:"commission",ph:"KOMISHEN"},{it:"provvigione",en:"fee",ph:"FII"},{it:"spese",en:"expenses",ph:"EXPENSEZ"},{it:"costi",en:"costs",ph:"KOSTS"},{it:"tasse",en:"taxes",ph:"TAKSEZ"},{it:"imposta",en:"tax",ph:"TAKS"},{it:"IMU",en:"property tax",ph:"PROPERTI TAKS"},{it:"registro",en:"registration",ph:"REGISTREISHEN"},{it:"catasto",en:"land registry",ph:"LAND REGISTRI"},{it:"visura",en:"land registry search",ph:"LAND REGISTRI SERCH"},{it:"planimetria",en:"floor plan",ph:"FLOR PLAN"},{it:"mappa",en:"map",ph:"MAP"},{it:"documento",en:"document",ph:"DOKIUMENT"},{it:"documentazione",en:"documentation",ph:"DOKIUMENTEISHEN"},{it:"certificato",en:"certificate",ph:"SERTIFEKIT"},{it:"attestato",en:"certificate",ph:"SERTIFEKIT"},{it:"certificato energetico",en:"energy certificate",ph:"ENERGI SERTIFEKIT"},{it:"APE",en:"energy performance certificate",ph:"ENERGI PERFORMANS"},{it:"conformità",en:"compliance",ph:"KOMPLAIANS"},{it:"regolare",en:"compliant",ph:"KOMPLAIANT"},{it:"irregolare",en:"non-compliant",ph:"NON-KOMPLAIANT"},{it:"abusivo",en:"illegal",ph:"ILIIGOL"},{it:"autorizzazione",en:"authorization",ph:"UTHORIZEISHAN"},{it:"permesso",en:"permit",ph:"PERMIT"},{it:"licenza",en:"license",ph:"LAISENS"},{it:"concessione",en:"concession",ph:"KONSESHEN"},{it:"proprietario",en:"owner",ph:"OUNER"},{it:"intestatario",en:"holder",ph:"HOULDER"},{it:"titolo",en:"title",ph:"TAITOL"},{it:"proprietà (ownership)",en:"ownership",ph:"OUNERSHP"},{it:"diritto",en:"right",ph:"RAIT"},{it:"usufrutto",en:"usufruct",ph:"IUZUFRUCT"},{it:"nuda proprietà",en:"bare ownership",ph:"BER OUNERSHP"},{it:"ipoteca",en:"mortgage lien",ph:"MORGIDG LIIN"},{it:"gravame",en:"encumbrance",ph:"ENKAMBRANS"},{it:"vincolo",en:"constraint",ph:"KONSTREINT"},{it:"servitù",en:"easement",ph:"IIZMENT"},{it:"affitto",en:"rent",ph:"RENT"},{it:"affittare",en:"rent",ph:"RENT"},{it:"inquilino",en:"tenant",ph:"TENANT"},{it:"locatore",en:"landlord",ph:"LANDLORD"},{it:"conduttore",en:"lessee",ph:"LESII"},{it:"locazione",en:"lease",ph:"LIIS"},{it:"canone",en:"rent",ph:"RENT"},{it:"deposito cauzionale",en:"security deposit",ph:"SIKIURITI DIPOSIT"},{it:"disdetta",en:"notice",ph:"NOUTIS"},{it:"recesso",en:"withdrawal",ph:"UITHDROL"},{it:"scadenza",en:"expiry",ph:"IKSPAIRI"},{it:"rinnovo",en:"renewal",ph:"RINIUL"},{it:"proroga",en:"extension",ph:"IKSTENSHEN"},{it:"registrazione",en:"registration",ph:"REGISTREISHEN"},{it:"risoluzione",en:"termination",ph:"TERMINEISHEN"},{it:"investimento",en:"investment",ph:"INVESTMENT"},{it:"investitore",en:"investor",ph:"INVESTOR"},{it:"rendita",en:"income",ph:"INKAM"},{it:"rendimento",en:"yield",ph:"IILD"},{it:"plusvalenza",en:"capital gain",ph:"KAPITAL GHEIN"},{it:"rivalutazione",en:"appreciation",ph:"APRIISIEISHEN"},{it:"svalutazione",en:"depreciation",ph:"DIPRIIISHEISHEN"},{it:"mercato",en:"market",ph:"MARKET"},{it:"domanda",en:"demand",ph:"DIMAND"},{it:"offerta (supply)",en:"supply",ph:"SAPLAAI"},{it:"tendenza",en:"trend",ph:"TREND"},{it:"crisi",en:"crisis",ph:"KRAISIS"},{it:"crescita",en:"growth",ph:"GROUTH"},{it:"calo",en:"decline",ph:"DIKLAIN"},{it:"aumento",en:"increase",ph:"INKRIIS"},{it:"diminuzione",en:"decrease",ph:"DIKRIIS"},{it:"stabile",en:"stable",ph:"STEIBOL"},{it:"volatile",en:"volatile",ph:"VOLATAIL"},{it:"liquido",en:"liquid",ph:"LIKUID"},{it:"illiquido",en:"illiquid",ph:"ILIKUID"},{it:"appuntamento",en:"appointment",ph:"APOINTMENT"},{it:"visita",en:"viewing",ph:"VIUING"},{it:"sopralluogo",en:"inspection",ph:"INSPEKSHEN"},{it:"mostrare",en:"show",ph:"SHOU"},{it:"presentare",en:"present",ph:"PRIZENT"},{it:"illustrare",en:"illustrate",ph:"ILUSTREIT"},{it:"spiegare",en:"explain",ph:"IXPLEIN"},{it:"descrivere",en:"describe",ph:"DISKRAIB"},{it:"evidenziare",en:"highlight",ph:"HAILAIT"},{it:"sottolineare",en:"emphasize",ph:"EMFASAIZ"},{it:"convincere",en:"convince",ph:"KONVINS"},{it:"persuadere",en:"persuade",ph:"PERSUEID"},{it:"consigliare",en:"advise",ph:"ADVAIZ"},{it:"suggerire",en:"suggest",ph:"SAGEST"},{it:"raccomandare",en:"recommend",ph:"REKOMEND"},{it:"confermare",en:"confirm",ph:"KONFERM"},{it:"verificare",en:"verify",ph:"VERIFAI"},{it:"controllare",en:"check",ph:"CHEK"},{it:"esaminare",en:"examine",ph:"IGZAMIN"},{it:"ispezionare",en:"inspect",ph:"INSPEKT"},{it:"approvare",en:"approve",ph:"APRUUV"},{it:"rifiutare",en:"reject",ph:"RIGEKT"},{it:"accettare",en:"accept",ph:"AKSEPT"},{it:"firmare",en:"sign",ph:"SAIN"},{it:"sottoscrivere",en:"subscribe",ph:"SABSKRAIB"},{it:"concludere",en:"conclude",ph:"KONKLUUD"},{it:"finalizzare",en:"finalize",ph:"FAINALAIZ"},{it:"completare",en:"complete",ph:"KOMPLIIT"},{it:"perfezionare",en:"finalize",ph:"FAINALAIZ"},{it:"chiudere (deal)",en:"close",ph:"KLOUZ"},{it:"urgente",en:"urgent",ph:"ERGENT"},{it:"importante",en:"important",ph:"IMPORTANT"},{it:"prioritario",en:"priority",ph:"PRAIORITY"},{it:"esclusiva",en:"exclusive",ph:"IKSKLUSIVE"},{it:"riservato",en:"confidential",ph:"KONFIDENSHAL"},{it:"interessato",en:"interested",ph:"INTERESTID"},{it:"disponibile",en:"available",ph:"AVAILABOL"},{it:"occupato",en:"busy",ph:"BIZI"},{it:"libero",en:"free",ph:"FRII"}],schedule:[{time:"6 min",color:"",title:"Terminologia contratti",desc:"Contract, deed, preliminary, mortgage, deposit, payment - base legale."},{time:"6 min",color:"",title:"Prezzi e trattative",desc:"Asking price, offer, negotiation, commission, taxes - linguaggio vendita."},{time:"6 min",color:"blue",title:"Documenti",desc:"Certificate, floor plan, land registry, energy certificate - paperwork."},{time:"7 min",color:"green",title:"Dialogo completo",desc:"From showing to closing: I can show you the property. The asking price is... We can negotiate. I will send you the contract."}],tips:["Mortgage (UK) = mutuo ipotecario, Loan = prestito generico","The asking price is... (NOT 'the ask price') - prezzo richiesto","Deposit = caparra, Down payment = acconto, Balance = saldo","Close the deal = concludere l'affare (verbo comune immobiliare)"],extra:["Simula trattative in inglese: The owner wants 300k, can you offer 280k?","Spiega documenti: You need the energy certificate, the floor plan, and the deed","Pratica l'intero processo: viewing → offer → negotiation → contract → closing"]}
+];
+
+// ======================================================
+// ICONE MESI
+// ======================================================
+var MONTH_ICONS = ["🔤","🔧","❓","📅","🍽️","✈️","💭","⏪","⏩","💼","🏠","📋"];
+
+// ======================================================
+// LEVELS (per esercizi)
+// ======================================================
+var LEVELS = [];
+for(var i=0; i<12; i++){
+  LEVELS.push({id:i, name:"Mese "+(i+1), words:MONTHS[i].words});
+}
+
+// ======================================================
+// STATE
+// ======================================================
+var currentSection = 'home';
+var pianoMonth = parseInt(localStorage.getItem('pianoMonth')||'0');
+
+var EX = {
+  level:0, mode:'', idx:0, score:0, total:0,
+  queue:[], answered:false, fcRevealed:false,
+  cosAllWords:[], cosUsed:[], cosBuilt:[],
+  aiPrompt:'', aiResult:'', aiLoading:false, aiError:''
+};
+
+// ======================================================
+// UTILS
+// ======================================================
+function speak(text){
+  if(!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  var u = new SpeechSynthesisUtterance(text);
+  u.lang='en-US'; u.rate=0.78;
+  speechSynthesis.speak(u);
+}
+function shuffle(arr){
+  var a=arr.slice();
+  for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}
+  return a;
+}
+function pct(a,b){ return b>0?Math.round(a/b*100):0; }
+function escQ(s){ return (s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+function starStr(n){ var s=''; for(var i=0;i<3;i++) s+=(i<n?'⭐':'☆'); return s; }
+
+function saveScore(lvl,mode,score,total){
+  var p=total>0?score/total:0;
+  var key='ip_'+lvl+'_'+mode;
+  var prev=parseFloat(localStorage.getItem(key)||'0');
+  if(p>prev) localStorage.setItem(key, p.toFixed(2));
+}
+function getScore(lvl,mode){
+  var v=localStorage.getItem('ip_'+lvl+'_'+mode);
+  return v!==null?parseFloat(v):null;
+}
+function getLevelProg(lvl){
+  var modes=['flashcard','quiz','completa','costruttore','dettato'];
+  var cnt=0;
+  modes.forEach(function(m){ if(getScore(lvl,m)!==null) cnt++; });
+  return cnt/modes.length;
+}
+function getLevelStars(lvl){
+  var modes=['flashcard','quiz','completa','costruttore','dettato'];
+  var done=[];
+  modes.forEach(function(m){ var s=getScore(lvl,m); if(s!==null) done.push(s); });
+  if(!done.length) return 0;
+  var avg=done.reduce(function(a,b){return a+b;},0)/done.length;
+  if(avg>=0.9) return 3; if(avg>=0.6) return 2; return 1;
+}
+
+// Sblocco mese: Quiz ≥ 70%
+function isMonthUnlocked(monthIdx){
+  if(monthIdx===0) return true;
+  var prevQuiz=getScore(monthIdx-1, 'quiz');
+  return prevQuiz!==null && prevQuiz>=0.7;
+}
+
+// Streak
+function getStreak(){
+  var today=new Date(); today.setHours(0,0,0,0);
+  var last=localStorage.getItem('lastStudy');
+  var streak=parseInt(localStorage.getItem('streak')||'0');
+  if(!last) return streak;
+  var lastD=new Date(parseInt(last)); lastD.setHours(0,0,0,0);
+  var diff=(today-lastD)/(1000*60*60*24);
+  if(diff>1) return 0;
+  return streak;
+}
+function markStudyToday(){
+  var today=new Date(); today.setHours(0,0,0,0);
+  var last=localStorage.getItem('lastStudy');
+  var streak=parseInt(localStorage.getItem('streak')||'0');
+  if(last){
+    var lastD=new Date(parseInt(last)); lastD.setHours(0,0,0,0);
+    var diff=(today-lastD)/(1000*60*60*24);
+    if(diff===1) streak++;
+    else if(diff>1) streak=1;
+  } else { streak=1; }
+  localStorage.setItem('streak',streak);
+  localStorage.setItem('lastStudy',today.getTime());
+}
+
+// ======================================================
+// NAVIGATION
+// ======================================================
+function showSection(id, tabEl){
+  document.querySelectorAll('.section').forEach(function(el){ el.classList.remove('active'); });
+  document.getElementById('sec-'+id).classList.add('active');
+  
+  document.querySelectorAll('.nav-tab').forEach(function(el){ el.classList.remove('active'); });
+  if(tabEl) tabEl.classList.add('active');
+  else{
+    var tabs=['home','piano','esercizi','dizionario','guida'];
+    var idx=tabs.indexOf(id);
+    if(idx>=0) document.querySelectorAll('.nav-tab')[idx].classList.add('active');
+  }
+  
+  if(id==='home') renderHome();
+  else if(id==='piano') renderPiano();
+  else if(id==='esercizi') renderLevels();
+  else if(id==='dizionario') renderDict();
+  else if(id==='guida') renderGuida();
+}
+
+function gotoEsercizi(lvl, mode){
+  showSection('esercizi', null);
+  if(lvl!==undefined){
+    EX.level=lvl;
+    if(mode) startMode(mode);
+    else renderModes();
+  }
+}
+
+// ======================================================
+// HOME
+// ======================================================
+function renderHome(){
+  var streak=getStreak();
+  var totalProg=0;
+  for(var i=0;i<12;i++) totalProg+=getLevelProg(i);
+  var overallPct=Math.round(totalProg/12*100);
+  var monthNum=MONTHS[pianoMonth].num;
+  
+  var html='';
+  html+='<div class="welcome-card">';
+  html+='<h2>Buonasera! 👋</h2>';
+  html+='<p>Hai 20 minuti? Studia il Mese '+monthNum+' e fai almeno una modalità di esercizi.</p>';
+  html+='<div class="stats-row">';
+  html+='<div class="stat-box"><span class="val">'+streak+'</span><span class="lbl">Giorni fila</span></div>';
+  html+='<div class="stat-box"><span class="val">'+overallPct+'%</span><span class="lbl">Completato</span></div>';
+  html+='<div class="stat-box"><span class="val">M'+monthNum+'</span><span class="lbl">Mese attuale</span></div>';
+  html+='</div></div>';
+  
+  html+='<div class="card"><div class="card-title">Progressi per mese</div>';
+  for(var mi=0;mi<12;mi++){
+    if(!isMonthUnlocked(mi)) continue;
+    var p=Math.round(getLevelProg(mi)*100);
+    html+='<div class="prog-row">';
+    html+='<div class="prog-top"><span class="prog-name">'+MONTH_ICONS[mi]+' Mese '+(mi+1)+' · '+MONTHS[mi].name+'</span><span class="prog-pct">'+p+'%</span></div>';
+    html+='<div class="prog-bar"><div class="prog-fill" style="width:'+p+'%"></div></div>';
+    html+='</div>';
+  }
+  html+='</div>';
+  
+  html+='<div class="quick-grid">';
+  html+='<div class="quick-btn" onclick="gotoEsercizi('+pianoMonth+',\'flashcard\')">';
+  html+='<div class="qi">🃏</div><div class="qn">Flashcard</div><div class="qs">Mese '+monthNum+'</div></div>';
+  html+='<div class="quick-btn" onclick="gotoEsercizi('+pianoMonth+',\'quiz\')">';
+  html+='<div class="qi">❓</div><div class="qn">Quiz</div><div class="qs">Mese '+monthNum+'</div></div>';
+  html+='<div class="quick-btn" onclick="gotoEsercizi('+pianoMonth+',\'completa\')">';
+  html+='<div class="qi">✏️</div><div class="qn">Completa</div><div class="qs">Mese '+monthNum+'</div></div>';
+  html+='<div class="quick-btn" onclick="gotoEsercizi('+pianoMonth+',\'dettato\')">';
+  html+='<div class="qi">🎧</div><div class="qn">Dettato</div><div class="qs">Mese '+monthNum+'</div></div>';
+  html+='</div>';
+  
+  document.getElementById('homeContent').innerHTML=html;
+}
+
+// ======================================================
+// PIANO
+// ======================================================
+function renderPiano(){
+  var m=MONTHS[pianoMonth];
+  var p=Math.round(getLevelProg(pianoMonth)*100);
+  
+  var html='';
+  html+='<div class="nav-month">';
+  html+='<button '+(pianoMonth===0?'disabled':'')+' onclick="pianoGoMonth('+(pianoMonth-1)+')">◀ Mese precedente</button>';
+  html+='<div class="nm-center">Mese '+m.num+' di 12 · '+p+'% completato</div>';
+  html+='<button '+(pianoMonth===11?'disabled':'')+' onclick="pianoGoMonth('+(pianoMonth+1)+')">Mese successivo ▶</button>';
+  html+='</div>';
+  
+  html+='<div class="dots-wrap">';
+  for(var i=0;i<12;i++){
+    var cls='dot';
+    var unlocked=isMonthUnlocked(i);
+    if(i<pianoMonth && unlocked) cls+=' done';
+    else if(i===pianoMonth) cls+=' current';
+    else if(!unlocked) cls+=' locked';
+    var clickable=unlocked?'onclick="pianoGoMonth('+i+')"':'';
+    html+='<div class="'+cls+'" '+clickable+'>'+MONTHS[i].num+'</div>';
+  }
+  html+='</div>';
+  
+  html+='<div class="month-hero">';
+  html+='<div class="month-tag">Mese '+m.num+'</div>';
+  html+='<h2>'+m.name+'</h2>';
+  html+='<div class="goal">'+m.goal+'</div>';
+  html+='<div class="m-stats">';
+  html+='<div class="m-stat">Parole<span>'+m.words+'</span></div>';
+  html+='<div class="m-stat">Nuove/sera<span>'+m.newWords+'</span></div>';
+  html+='<div class="m-stat">Focus<span>'+m.focus+'</span></div>';
+  html+='</div></div>';
+  
+  html+='<div class="card"><div class="card-title">📅 Piano serale (20 min)</div>';
+  m.schedule.forEach(function(s){
+    var badge='tbadge';
+    if(s.color) badge+=' '+s.color;
+    html+='<div class="time-block">';
+    html+='<div class="'+badge+'">'+s.time+'</div>';
+    html+='<div class="tinfo"><h4>'+s.title+'</h4><p>'+s.desc+'</p></div>';
+    html+='</div>';
+  });
+  html+='</div>';
+  
+  html+='<div class="card"><div class="card-title">📝 Parole del mese</div>';
+  m.vocab.forEach(function(w){
+    html+='<div class="word-chip" onclick="speak(\''+escQ(w.en)+'\')">';
+    html+='<span>'+w.it+'</span> · <strong>'+w.en+'</strong>';
+    if(w.ph) html+=' <span class="ph">'+w.ph+'</span>';
+    html+='</div>';
+  });
+  html+='</div>';
+  
+  html+='<div class="card"><div class="card-title">💡 Consigli pratici</div>';
+  m.tips.forEach(function(t){
+    html+='<div class="tip-row"><div class="tip-icon">💡</div><div>'+t+'</div></div>';
+  });
+  html+='</div>';
+  
+  if(m.extra && m.extra.length){
+    html+='<div class="card"><div class="card-title">🎯 Esercizi extra</div>';
+    m.extra.forEach(function(e){
+      html+='<div class="tip-row"><div class="tip-icon">🎯</div><div>'+e+'</div></div>';
+    });
+    html+='</div>';
+  }
+  
+  html+='<button class="month-done-btn" onclick="monthDone()">✅ Mese completato - Passa al prossimo</button>';
+  
+  document.getElementById('pianoContent').innerHTML=html;
+}
+
+function pianoGoMonth(idx){
+  if(idx<0 || idx>=12) return;
+  if(!isMonthUnlocked(idx)){
+    alert('Questo mese è bloccato. Devi completare il Quiz del mese precedente con almeno 70% per sbloccarlo.');
+    return;
+  }
+  pianoMonth=idx;
+  localStorage.setItem('pianoMonth', pianoMonth);
+  renderPiano();
+}
+
+function monthDone(){
+  if(pianoMonth===11){
+    alert('Congratulazioni! Hai completato tutti i 12 mesi! 🎉');
+    return;
+  }
+  var nextMonth=pianoMonth+1;
+  if(!isMonthUnlocked(nextMonth)){
+    alert('Per sbloccare il mese successivo, devi completare il Quiz di questo mese con almeno 70%.');
+    return;
+  }
+  pianoMonth=nextMonth;
+  localStorage.setItem('pianoMonth', pianoMonth);
+  renderPiano();
+  alert('Passato al Mese '+(pianoMonth+1)+'! 🎉');
+}
+
+// ======================================================
+// ESERCIZI - LEVELS
+// ======================================================
+function renderLevels(){
+  var html='';
+  html+='<div class="card"><div class="card-title">Scegli un mese</div></div>';
+  html+='<div class="level-grid">';
+  for(var i=0;i<12;i++){
+    var unlocked=isMonthUnlocked(i);
+    var p=getLevelProg(i);
+    var stars=getLevelStars(i);
+    var cls='level-card'+(unlocked?'':' locked');
+    var click=unlocked?'onclick="gotoEsercizi('+i+')"':'';
+    html+='<div class="'+cls+'" '+click+'>';
+    if(!unlocked) html+='<div class="level-lock">🔒</div>';
+    html+='<div class="level-num">'+MONTH_ICONS[i]+'</div>';
+    html+='<div class="level-name">Mese '+(i+1)+'</div>';
+    html+='<div class="level-prog">'+Math.round(p*100)+'% completato</div>';
+    html+='<div class="level-stars">'+starStr(stars)+'</div>';
+    html+='</div>';
+  }
+  html+='</div>';
+  document.getElementById('eserciziContent').innerHTML=html;
+}
+
+// ======================================================
+// ESERCIZI - MODES
+// ======================================================
+function renderModes(){
+  var lvl=EX.level;
+  var m=MONTHS[lvl];
+  var html='';
+  html+='<div class="card">';
+  html+='<button class="ex-btn" onclick="renderLevels()" style="margin-bottom:10px">◀ Torna ai mesi</button>';
+  html+='<div class="card-title">'+MONTH_ICONS[lvl]+' Mese '+(lvl+1)+' · '+m.name+'</div>';
+  html+='<p style="font-size:.8rem;color:var(--brown)">'+m.words+' parole · Focus: '+m.focus+'</p>';
+  html+='</div>';
+  
+  var modes=[
+    {id:'flashcard',icon:'🃏',name:'Flashcard',desc:'Tocca la carta per girare e vedere la traduzione'},
+    {id:'quiz',icon:'❓',name:'Quiz',desc:'4 opzioni. Scegli quella giusta'},
+    {id:'completa',icon:'✏️',name:'Completa la frase',desc:'Frase con una parola mancante. Scrivila tu'},
+    {id:'costruttore',icon:'🧩',name:'Costruttore di frasi',desc:'Tocca le parole nell\'ordine giusto'},
+    {id:'dettato',icon:'🎧',name:'Dettato',desc:'Ascolta e scrivi la parola'},
+    {id:'aifrasi',icon:'🤖',name:'AI Frasi',desc:'Claude genera esercizi personalizzati in base alle tue esigenze'}
+  ];
+  
+  html+='<div class="modes-wrap">';
+  modes.forEach(function(mo){
+    var score=getScore(lvl, mo.id);
+    var scoreHTML=score!==null?Math.round(score*100)+'%':'—';
+    html+='<div class="mode-row" onclick="startMode(\''+mo.id+'\')">';
+    html+='<div class="mode-icon">'+mo.icon+'</div>';
+    html+='<div class="mode-info">';
+    html+='<div class="mode-name">'+mo.name+'</div>';
+    html+='<div class="mode-desc">'+mo.desc+'</div>';
+    html+='</div>';
+    html+='<div class="mode-score">'+scoreHTML+'</div>';
+    html+='</div>';
+  });
+  html+='</div>';
+  
+  document.getElementById('eserciziContent').innerHTML=html;
+}
+
+function startMode(mode){
+  EX.mode=mode;
+  EX.idx=0;
+  EX.score=0;
+  EX.total=0;
+  EX.answered=false;
+  EX.fcRevealed=false;
+  EX.aiPrompt='';
+  EX.aiResult='';
+  EX.aiLoading=false;
+  EX.aiError='';
+  
+  var vocab=MONTHS[EX.level].vocab;
+  if(mode==='flashcard'){
+    EX.queue=shuffle(vocab);
+    renderFlashcard();
+  } else if(mode==='quiz'){
+    EX.queue=shuffle(vocab);
+    renderQuiz();
+  } else if(mode==='completa'){
+    EX.queue=shuffle(vocab);
+    renderCompleta();
+  } else if(mode==='costruttore'){
+    EX.queue=shuffle(vocab);
+    renderCostruttore();
+  } else if(mode==='dettato'){
+    EX.queue=shuffle(vocab);
+    renderDettato();
+  } else if(mode==='aifrasi'){
+    renderAIFrasi();
+  }
+  
+  markStudyToday();
+}
+
+// ======================================================
+// FLASHCARD
+// ======================================================
+function renderFlashcard(){
+  if(EX.idx>=EX.queue.length){ renderScore(); return; }
+  var w=EX.queue[EX.idx];
+  var prog=(EX.idx+1)+'/'+EX.queue.length;
+  
+  var html='';
+  html+='<div class="ex-header">';
+  html+='<div class="ex-title">🃏 Flashcard · Mese '+(EX.level+1)+'</div>';
+  html+='<div class="ex-prog">Carta '+prog+'</div>';
+  html+='</div>';
+  
+  html+='<div class="ex-card" onclick="fcFlip()">';
+  if(!EX.fcRevealed){
+    html+='<div class="question">'+w.it+'</div>';
+    html+='<p style="font-size:.8rem;color:var(--brown);margin-top:12px">Tocca per girare</p>';
+  } else {
+    html+='<div class="answer">'+w.en+'</div>';
+    if(w.ph) html+='<p style="font-size:.8rem;color:var(--gold);font-style:italic;margin-top:8px">'+w.ph+'</p>';
+    html+='<button class="ex-btn" onclick="speak(\''+escQ(w.en)+'\');event.stopPropagation()" style="margin-top:12px">🔊 Pronuncia</button>';
+  }
+  html+='</div>';
+  
+  if(EX.fcRevealed){
+    html+='<div style="text-align:center">';
+    html+='<button class="ex-btn green" onclick="fcNext(true)" style="margin:5px">✅ La so</button>';
+    html+='<button class="ex-btn" onclick="fcNext(false)" style="margin:5px;background:var(--red)">❌ Non la so</button>';
+    html+='</div>';
+  }
+  
+  document.getElementById('eserciziContent').innerHTML=html;
+}
+
+function fcFlip(){
+  EX.fcRevealed=!EX.fcRevealed;
+  renderFlashcard();
+}
+
+function fcNext(correct){
+  if(correct){ EX.score++; }
+  EX.total++;
+  EX.idx++;
+  EX.fcRevealed=false;
+  renderFlashcard();
+}
+
+// ======================================================
+// QUIZ
+// ======================================================
+function renderQuiz(){
+  if(EX.idx>=EX.queue.length){ renderScore(); return; }
+  var w=EX.queue[EX.idx];
+  var prog=(EX.idx+1)+'/'+EX.queue.length;
+  
+  var allW=MONTHS[EX.level].vocab;
+  var opts=[w.en];
+  var others=allW.filter(function(x){ return x.en!==w.en; });
+  others=shuffle(others).slice(0,3);
+  others.forEach(function(x){ opts.push(x.en); });
+  opts=shuffle(opts);
+  
+  var html='';
+  html+='<div class="ex-header">';
+  html+='<div class="ex-title">❓ Quiz · Mese '+(EX.level+1)+'</div>';
+  html+='<div class="ex-prog">Domanda '+prog+'</div>';
+  html+='</div>';
+  
+  html+='<div class="ex-card">';
+  html+='<div class="question">'+w.it+'</div>';
+  html+='</div>';
+  
+  html+='<div class="opts-grid">';
+  opts.forEach(function(opt){
+    var cls='opt-btn';
+    var click='onclick="quizCheck(\''+escQ(opt)+'\')"';
+    if(EX.answered){
+      if(opt===w.en) cls+=' correct';
+      else if(opt===EX.userAnswer) cls+=' wrong';
+      click='';
+    }
+    html+='<div class="'+cls+'" '+click+'>'+opt+'</div>';
+  });
+  html+='</div>';
+  
+  if(EX.answered){
+    html+='<div style="text-align:center;margin-top:14px">';
+    html+='<button class="ex-btn green" onclick="quizNext()">Prossima domanda →</button>';
+    html+='</div>';
+  }
+  
+  document.getElementById('eserciziContent').innerHTML=html;
+}
+
+function quizCheck(ans){
+  if(EX.answered) return;
+  var w=EX.queue[EX.idx];
+  EX.userAnswer=ans;
+  EX.answered=true;
+  EX.total++;
+  if(ans===w.en){ EX.score++; }
+  renderQuiz();
+  
+  setTimeout(function(){
+    quizNext();
+  }, 1200);
+}
+
+function quizNext(){
+  EX.idx++;
+  EX.answered=false;
+  EX.userAnswer='';
+  renderQuiz();
+}
+
+// ======================================================
+// COMPLETA
+// ======================================================
+function renderCompleta(){
+  if(EX.idx>=EX.queue.length){ renderScore(); return; }
+  var w=EX.queue[EX.idx];
+  var prog=(EX.idx+1)+'/'+EX.queue.length;
+  
+  var templates=[
+    'I have a ___ here.',
+    'This is my ___.',
+    'Do you want ___?',
+    'I need a ___.',
+    'The ___ is here.',
+    'Where is the ___?',
+    'Can you see the ___?',
+    'I like this ___.'
+  ];
+  var sentence=templates[Math.floor(Math.random()*templates.length)].replace('___','______');
+  
+  var html='';
+  html+='<div class="ex-header">';
+  html+='<div class="ex-title">✏️ Completa la frase · Mese '+(EX.level+1)+'</div>';
+  html+='<div class="ex-prog">Frase '+prog+'</div>';
+  html+='</div>';
+  
+  html+='<div class="ex-card">';
+  html+='<div class="question">'+w.it+'</div>';
+  html+='<p style="font-size:.85rem;color:var(--brown);margin-top:12px">'+sentence+'</p>';
+  html+='</div>';
+  
+  if(!EX.answered){
+    html+='<input class="input-ans" id="compAns" type="text" placeholder="Scrivi la parola inglese...">';
+    html+='<div style="text-align:center">';
+    html+='<button class="ex-btn" onclick="compCheck()">Verifica</button>';
+    html+='</div>';
+  } else {
+    var correct=(EX.userAnswer.toLowerCase().trim()===w.en.toLowerCase());
+    html+='<div class="ex-card" style="background:'+(correct?'var(--green)':'var(--red)')+';color:#fff">';
+    html+='<div style="font-size:1rem;margin-bottom:8px">'+(correct?'✅ Corretto!':'❌ Sbagliato')+'</div>';
+    html+='<div>Risposta giusta: <strong>'+w.en+'</strong></div>';
+    if(w.ph) html+='<div style="font-size:.8rem;margin-top:4px">'+w.ph+'</div>';
+    html+='</div>';
+    html+='<div style="text-align:center">';
+    html+='<button class="ex-btn green" onclick="compNext()">Prossima frase →</button>';
+    html+='</div>';
+  }
+  
+  document.getElementById('eserciziContent').innerHTML=html;
+}
+
+function compCheck(){
+  var ans=document.getElementById('compAns').value;
+  EX.userAnswer=ans;
+  EX.answered=true;
+  EX.total++;
+  var w=EX.queue[EX.idx];
+  if(ans.toLowerCase().trim()===w.en.toLowerCase()){ EX.score++; }
+  renderCompleta();
+}
+
+function compNext(){
+  EX.idx++;
+  EX.answered=false;
+  EX.userAnswer='';
+  renderCompleta();
+}
+
+// ======================================================
+// COSTRUTTORE
+// ======================================================
+function renderCostruttore(){
+  if(EX.idx>=EX.queue.length){ renderScore(); return; }
+  var w=EX.queue[EX.idx];
+  var prog=(EX.idx+1)+'/'+EX.queue.length;
+  
+  if(!EX.cosAllWords.length){
+    var templates=[
+      ['I','have','a'],
+      ['This','is','my'],
+      ['Do','you','want'],
+      ['I','need','a'],
+      ['The','is','here'],
+      ['Where','is','the'],
+      ['Can','you','see','the'],
+      ['I','like','this']
+    ];
+    var tpl=templates[Math.floor(Math.random()*templates.length)];
+    var words=tpl.slice();
+    words.push(w.en);
+    EX.cosAllWords=shuffle(words);
+    EX.cosUsed=[];
+    EX.cosBuilt=[];
+  }
+  
+  var html='';
+  html+='<div class="ex-header">';
+  html+='<div class="ex-title">🧩 Costruttore di frasi · Mese '+(EX.level+1)+'</div>';
+  html+='<div class="ex-prog">Frase '+prog+'</div>';
+  html+='</div>';
+  
+  html+='<div class="ex-card">';
+  html+='<div class="question">'+w.it+'</div>';
+  html+='<p style="font-size:.8rem;color:var(--brown);margin-top:8px">Costruisci la frase toccando le parole nell\'ordine giusto</p>';
+  html+='</div>';
+  
+  html+='<div class="built-sentence" id="builtSent">';
+  if(!EX.cosBuilt.length){
+    html+='<span style="opacity:.5;font-size:.85rem">Tocca le parole sotto...</span>';
+  } else {
+    EX.cosBuilt.forEach(function(wd){
+      html+='<div class="built-word">'+wd+'</div>';
+    });
+  }
+  html+='</div>';
+  
+  html+='<div class="words-grid">';
+  EX.cosAllWords.forEach(function(wd,i){
+    var used=EX.cosUsed.indexOf(i)>=0;
+    var cls='word-tile'+(used?' used':'');
+    var click=used?'':'onclick="cosAddWord('+i+')"';
+    html+='<div class="'+cls+'" '+click+'>'+wd+'</div>';
+  });
+  html+='</div>';
+  
+  if(!EX.answered){
+    html+='<div style="text-align:center;margin-top:14px">';
+    html+='<button class="ex-btn" onclick="cosReset()" style="background:var(--red);margin-right:8px">🔄 Ricomincia</button>';
+    html+='<button class="ex-btn" onclick="cosCheck()">Verifica frase</button>';
+    html+='</div>';
+  } else {
+    var builtSent=EX.cosBuilt.join(' ');
+    var correct=(builtSent.toLowerCase().indexOf(w.en.toLowerCase())>=0);
+    html+='<div class="ex-card" style="background:'+(correct?'var(--green)':'var(--red)')+';color:#fff;margin-top:14px">';
+    html+='<div style="font-size:1rem;margin-bottom:8px">'+(correct?'✅ Corretto!':'❌ Sbagliato')+'</div>';
+    html+='<div>La parola era: <strong>'+w.en+'</strong></div>';
+    html+='</div>';
+    html+='<div style="text-align:center;margin-top:14px">';
+    html+='<button class="ex-btn green" onclick="cosNext()">Prossima frase →</button>';
+    html+='</div>';
+  }
+  
+  document.getElementById('eserciziContent').innerHTML=html;
+}
+
+function cosAddWord(idx){
+  EX.cosBuilt.push(EX.cosAllWords[idx]);
+  EX.cosUsed.push(idx);
+  renderCostruttore();
+}
+
+function cosReset(){
+  EX.cosBuilt=[];
+  EX.cosUsed=[];
+  renderCostruttore();
+}
+
+function cosCheck(){
+  EX.answered=true;
+  EX.total++;
+  var w=EX.queue[EX.idx];
+  var builtSent=EX.cosBuilt.join(' ');
+  if(builtSent.toLowerCase().indexOf(w.en.toLowerCase())>=0){ EX.score++; }
+  renderCostruttore();
+}
+
+function cosNext(){
+  EX.idx++;
+  EX.answered=false;
+  EX.cosAllWords=[];
+  EX.cosUsed=[];
+  EX.cosBuilt=[];
+  renderCostruttore();
+}
+
+// ======================================================
+// DETTATO
+// ======================================================
+function renderDettato(){
+  if(EX.idx>=EX.queue.length){ renderScore(); return; }
+  var w=EX.queue[EX.idx];
+  var prog=(EX.idx+1)+'/'+EX.queue.length;
+  
+  var html='';
+  html+='<div class="ex-header">';
+  html+='<div class="ex-title">🎧 Dettato · Mese '+(EX.level+1)+'</div>';
+  html+='<div class="ex-prog">Parola '+prog+'</div>';
+  html+='</div>';
+  
+  html+='<div class="ex-card">';
+  html+='<div class="question">Ascolta e scrivi la parola</div>';
+  html+='<button class="ex-btn blue" onclick="speak(\''+escQ(w.en)+'\')" style="margin-top:12px">🔊 Ascolta</button>';
+  html+='</div>';
+  
+  if(!EX.answered){
+    html+='<input class="input-ans" id="dictAns" type="text" placeholder="Scrivi quello che senti...">';
+    html+='<div style="text-align:center">';
+    html+='<button class="ex-btn" onclick="dictCheck()">Verifica</button>';
+    html+='</div>';
+  } else {
+    var correct=(EX.userAnswer.toLowerCase().trim()===w.en.toLowerCase());
+    html+='<div class="ex-card" style="background:'+(correct?'var(--green)':'var(--red)')+';color:#fff">';
+    html+='<div style="font-size:1rem;margin-bottom:8px">'+(correct?'✅ Corretto!':'❌ Sbagliato')+'</div>';
+    html+='<div>Risposta giusta: <strong>'+w.en+'</strong></div>';
+    html+='<div style="margin-top:8px">Traduzione: '+w.it+'</div>';
+    if(w.ph) html+='<div style="font-size:.8rem;margin-top:4px">'+w.ph+'</div>';
+    html+='</div>';
+    html+='<div style="text-align:center">';
+    html+='<button class="ex-btn green" onclick="dictNext()">Prossima parola →</button>';
+    html+='</div>';
+  }
+  
+  document.getElementById('eserciziContent').innerHTML=html;
+  
+  if(!EX.answered){
+    setTimeout(function(){
+      speak(w.en);
+    }, 500);
+  }
+}
+
+function dictCheck(){
+  var ans=document.getElementById('dictAns').value;
+  EX.userAnswer=ans;
+  EX.answered=true;
+  EX.total++;
+  var w=EX.queue[EX.idx];
+  if(ans.toLowerCase().trim()===w.en.toLowerCase()){ EX.score++; }
+  renderDettato();
+}
+
+function dictNext(){
+  EX.idx++;
+  EX.answered=false;
+  EX.userAnswer='';
+  renderDettato();
+}
+
+// ======================================================
+// AI FRASI (Modalità 6)
+// ======================================================
+function renderAIFrasi(){
+  var html='';
+  html+='<div class="card">';
+  html+='<button class="ex-btn" onclick="renderModes()" style="margin-bottom:10px">◀ Torna alle modalità</button>';
+  html+='<div class="card-title">🤖 AI Frasi · Mese '+(EX.level+1)+'</div>';
+  html+='<p style="font-size:.8rem;color:var(--brown);margin-bottom:12px">Claude genera esercizi personalizzati in base alle tue esigenze. Scrivi cosa vuoi esercitare (es: "Crea 5 frasi con i verbi al passato" oppure "Dialogo cliente che cerca appartamento").</p>';
+  html+='</div>';
+  
+  html+='<div class="ai-input-wrap">';
+  html+='<textarea class="ai-input" id="aiPromptInput" placeholder="Es: Crea 5 frasi con past simple usando le parole di questo mese&#10;Oppure: Simula un dialogo cliente-agente per mostrare un appartamento">'+EX.aiPrompt+'</textarea>';
+  html+='</div>';
+  
+  if(!EX.aiLoading && !EX.aiResult && !EX.aiError){
+    html+='<div style="text-align:center">';
+    html+='<button class="ex-btn green" onclick="aiGenerate()">🚀 Genera esercizi</button>';
+    html+='</div>';
+  }
+  
+  if(EX.aiLoading){
+    html+='<div class="ai-loading">';
+    html+='<div class="ai-loading-icon">⏳</div>';
+    html+='<div class="ai-loading-text">Claude sta generando gli esercizi...</div>';
+    html+='</div>';
+  }
+  
+  if(EX.aiError){
+    html+='<div class="ai-error">';
+    html+='<div class="ai-error-text">❌ '+EX.aiError+'</div>';
+    html+='</div>';
+    html+='<div style="text-align:center;margin-top:12px">';
+    html+='<button class="ex-btn" onclick="aiReset()">🔄 Riprova</button>';
+    html+='</div>';
+  }
+  
+  if(EX.aiResult && !EX.aiLoading){
+    html+='<div class="ai-result">';
+    html+='<div class="ai-result-title">📝 Esercizi generati:</div>';
+    html+='<div class="ai-result-text">'+EX.aiResult+'</div>';
+    html+='</div>';
+    html+='<div style="text-align:center;margin-top:12px">';
+    html+='<button class="ex-btn" onclick="speak(EX.aiResult.split(\'\\n\')[0])" style="margin-right:8px">🔊 Ascolta prima riga</button>';
+    html+='<button class="ex-btn green" onclick="aiReset()">✨ Nuovi esercizi</button>';
+    html+='</div>';
+  }
+  
+  document.getElementById('eserciziContent').innerHTML=html;
+}
+
+function aiGenerate(){
+  var promptEl=document.getElementById('aiPromptInput');
+  if(!promptEl) return;
+  var prompt=promptEl.value.trim();
+  if(!prompt){
+    alert('Scrivi cosa vuoi esercitare!');
+    return;
+  }
+  
+  EX.aiPrompt=prompt;
+  EX.aiLoading=true;
+  EX.aiResult='';
+  EX.aiError='';
+  renderAIFrasi();
+  
+  var vocab=MONTHS[EX.level].vocab;
+  var vocabList=vocab.map(function(w){ return w.it+' = '+w.en; }).join(', ');
+  
+  var systemPrompt='Tu sei un insegnante di inglese. L\'utente sta studiando il mese '+(EX.level+1)+' del suo percorso. Le parole di questo mese sono: '+vocabList+'. Genera esercizi pratici e utili in base alla richiesta dell\'utente. Rispondi in italiano e inglese dove necessario. Sii conciso e pratico.';
+  
+  fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'anthropic-version': '2023-06-01'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      system: systemPrompt,
+      messages: [
+        { role: 'user', content: prompt }
+      ]
+    })
+  })
+  .then(function(response){
+    if(!response.ok){
+      throw new Error('Errore API: ' + response.status);
+    }
+    return response.json();
+  })
+  .then(function(data){
+    if(data.content && data.content[0] && data.content[0].text){
+      EX.aiResult=data.content[0].text;
+      EX.aiLoading=false;
+      renderAIFrasi();
+    } else {
+      throw new Error('Risposta API non valida');
+    }
+  })
+  .catch(function(error){
+    EX.aiError='Errore: '+error.message+'. Verifica la connessione e riprova.';
+    EX.aiLoading=false;
+    renderAIFrasi();
+  });
+}
+
+function aiReset(){
+  EX.aiPrompt='';
+  EX.aiResult='';
+  EX.aiError='';
+  EX.aiLoading=false;
+  renderAIFrasi();
+}
+
+// ======================================================
+// SCORE
+// ======================================================
+function renderScore(){
+  var p=EX.total>0?EX.score/EX.total:0;
+  var pct=Math.round(p*100);
+  var stars=0;
+  if(p>=0.9) stars=3;
+  else if(p>=0.6) stars=2;
+  else if(p>=0.3) stars=1;
+  
+  saveScore(EX.level, EX.mode, EX.score, EX.total);
+  
+  var html='';
+  html+='<div class="score-card">';
+  html+='<div class="score-icon">'+(stars===3?'🏆':stars===2?'🥈':stars===1?'🥉':'📊')+'</div>';
+  html+='<div class="score-val">'+pct+'%</div>';
+  html+='<div class="score-label">'+EX.score+' su '+EX.total+' corrette</div>';
+  html+='<div class="score-stars">'+starStr(stars)+'</div>';
+  html+='<div class="score-btns">';
+  html+='<button class="ex-btn" onclick="startMode(\''+EX.mode+'\')">🔄 Ripeti</button>';
+  html+='<button class="ex-btn green" onclick="renderModes()" style="margin-left:8px">✅ Altre modalità</button>';
+  html+='</div>';
+  html+='</div>';
+  
+  document.getElementById('eserciziContent').innerHTML=html;
+}
+
+// ======================================================
+// DIZIONARIO
+// ======================================================
+function renderDict(){
+  var custom=JSON.parse(localStorage.getItem('customWords')||'[]');
+  var allWords=[];
+  MONTHS.forEach(function(m){
+    m.vocab.forEach(function(w){
+      allWords.push({it:w.it,en:w.en,ph:w.ph||'',custom:false});
+    });
+  });
+  custom.forEach(function(w){
+    allWords.push({it:w.it,en:w.en,ph:w.ph||'',custom:true});
+  });
+  
+  var search=(localStorage.getItem('dictSearch')||'').toLowerCase();
+  var filtered=allWords;
+  if(search){
+    filtered=allWords.filter(function(w){
+      return w.it.toLowerCase().indexOf(search)>=0 || w.en.toLowerCase().indexOf(search)>=0;
+    });
+  }
+  
+  var html='';
+  html+='<div class="card"><div class="card-title">📖 Dizionario Personale</div>';
+  html+='<p style="font-size:.8rem;color:var(--brown)">Tutte le parole del corso + le tue aggiunte personali</p>';
+  html+='</div>';
+  
+  html+='<input class="dict-search" type="text" placeholder="🔍 Cerca parola..." value="'+search+'" oninput="dictSearch(this.value)">';
+  
+  html+='<div class="dict-add">';
+  html+='<input class="dict-input" id="dictIt" type="text" placeholder="Italiano">';
+  html+='<input class="dict-input" id="dictEn" type="text" placeholder="Inglese">';
+  html+='<input class="dict-input" id="dictPh" type="text" placeholder="Pronuncia (opzionale)">';
+  html+='<button class="ex-btn green" onclick="dictAdd()" style="width:100%;margin-top:8px">➕ Aggiungi parola</button>';
+  html+='</div>';
+  
+  html+='<div class="dict-list">';
+  if(!filtered.length){
+    html+='<p style="text-align:center;padding:20px;color:var(--brown)">Nessuna parola trovata</p>';
+  } else {
+    filtered.forEach(function(w,i){
+      html+='<div class="dict-item">';
+      html+='<div class="dit">'+w.it+'</div>';
+      html+='<div class="den">'+w.en+'</div>';
+      if(w.ph) html+='<div class="dph">'+w.ph+'</div>';
+      html+='<div class="dspk" onclick="speak(\''+escQ(w.en)+'\')">🔊</div>';
+      if(w.custom){
+        html+='<div class="ddel" onclick="dictDel('+i+')">🗑️</div>';
+      }
+      html+='</div>';
+    });
+  }
+  html+='</div>';
+  
+  document.getElementById('dizionarioContent').innerHTML=html;
+}
+
+function dictSearch(val){
+  localStorage.setItem('dictSearch', val);
+  renderDict();
+}
+
+function dictAdd(){
+  var it=document.getElementById('dictIt').value.trim();
+  var en=document.getElementById('dictEn').value.trim();
+  var ph=document.getElementById('dictPh').value.trim();
+  if(!it || !en){
+    alert('Compila almeno italiano e inglese');
+    return;
+  }
+  var custom=JSON.parse(localStorage.getItem('customWords')||'[]');
+  custom.push({it:it,en:en,ph:ph});
+  localStorage.setItem('customWords', JSON.stringify(custom));
+  renderDict();
+}
+
+function dictDel(idx){
+  var custom=JSON.parse(localStorage.getItem('customWords')||'[]');
+  if(!confirm('Eliminare questa parola?')) return;
+  custom.splice(idx, 1);
+  localStorage.setItem('customWords', JSON.stringify(custom));
+  renderDict();
+}
+
+// ======================================================
+// GUIDA
+// ======================================================
+function renderGuida(){
+  var html='';
+  html+='<div class="guida-intro"><h2>Cos\'è questo sito</h2><p>Il tuo strumento personale per imparare l\'inglese con il metodo Pareto: 950+ parole che coprono l\'80% dell\'inglese parlato, in 12 mesi, con 20 minuti al giorno. Funziona offline e salva i tuoi progressi automaticamente.</p></div>';
+  
+  html+='<div class="guida-sec"><div class="guida-sec-head"><div class="guida-icon">🏠</div><div><div class="guida-sec-title">Home — il punto di partenza</div><div class="guida-sec-sub">Apri sempre da qui</div></div></div>';
+  html+='<div class="gstep"><div class="gstep-num">1</div><div class="gstep-text">Vedi <strong>giorni di fila</strong> e <strong>% completamento</strong> a colpo d\'occhio.</div></div>';
+  html+='<div class="gstep"><div class="gstep-num">2</div><div class="gstep-text">Le <strong>4 scorciatoie rapide</strong> ti portano direttamente all\'esercizio del giorno.</div></div>';
+  html+='<div class="gstep"><div class="gstep-num">3</div><div class="gstep-text">Il <strong>grafico per livello</strong> mostra dove sei avanti e dove hai ancora da lavorare.</div></div></div>';
+  
+  html+='<div class="guida-sec"><div class="guida-sec-head"><div class="guida-icon">📅</div><div><div class="guida-sec-title">Piano — il programma dei 12 mesi</div><div class="guida-sec-sub">Cosa fare ogni sera</div></div></div>';
+  html+='<div class="gstep"><div class="gstep-num">1</div><div class="gstep-text">Ogni mese ha un <strong>obiettivo chiaro</strong> e un piano serale in blocchi da 5 minuti.</div></div>';
+  html+='<div class="gstep"><div class="gstep-num">2</div><div class="gstep-text">Tocca le <strong>parole del mese</strong> per sentire la pronuncia in inglese.</div></div>';
+  html+='<div class="gstep"><div class="gstep-num">3</div><div class="gstep-text">Quando finisci, tocca <strong>"Mese completato"</strong> — il sito avanza automaticamente.</div></div>';
+  html+='<div class="gstep"><div class="gstep-num">4</div><div class="gstep-text"><strong>IMPORTANTE:</strong> Il mese successivo si sblocca solo se completi il Quiz del mese corrente con almeno 70%.</div></div></div>';
+  
+  html+='<div class="guida-sec"><div class="guida-sec-head"><div class="guida-icon">✏️</div><div><div class="guida-sec-title">Esercizi — 12 mesi × 6 modalità</div><div class="guida-sec-sub">Il cuore del metodo</div></div></div>';
+  html+='<div class="gstep" style="margin-bottom:12px"><div class="gstep-num">→</div><div class="gstep-text">Scegli un <strong>mese</strong>, poi scegli una <strong>modalità</strong>:</div></div>';
+  html+='<div class="mode-row-g"><div class="mode-row-g-icon">🃏</div><div class="mode-row-g-info"><strong>Flashcard</strong><span>Tocca la carta per girare e vedere la traduzione.</span></div></div>';
+  html+='<div class="mode-row-g"><div class="mode-row-g-icon">❓</div><div class="mode-row-g-info"><strong>Quiz</strong><span>4 opzioni. Scegli quella giusta. Devi fare 70% per sbloccare il mese dopo.</span></div></div>';
+  html+='<div class="mode-row-g"><div class="mode-row-g-icon">✏️</div><div class="mode-row-g-info"><strong>Completa la frase</strong><span>Frase inglese con una parola mancante. La scrivi tu.</span></div></div>';
+  html+='<div class="mode-row-g"><div class="mode-row-g-icon">🧩</div><div class="mode-row-g-info"><strong>Costruttore di frasi</strong><span>Tocca le parole nell\'ordine giusto per costruire la frase.</span></div></div>';
+  html+='<div class="mode-row-g"><div class="mode-row-g-icon">🎧</div><div class="mode-row-g-info"><strong>Dettato</strong><span>Il telefono pronuncia una parola. Scrivi quello che senti.</span></div></div>';
+  html+='<div class="mode-row-g" style="margin-bottom:0"><div class="mode-row-g-icon">🤖</div><div class="mode-row-g-info"><strong>AI Frasi</strong><span>Claude genera esercizi personalizzati su misura per te.</span></div></div>';
+  html+='<div class="gstep" style="margin-top:12px;margin-bottom:0"><div class="gstep-num">✓</div><div class="gstep-text">Alla fine vedi il <strong>punteggio %</strong>. Viene salvato il risultato migliore.</div></div></div>';
+  
+  html+='<div class="guida-sec"><div class="guida-sec-head"><div class="guida-icon">📖</div><div><div class="guida-sec-title">Dizionario — le tue parole</div><div class="guida-sec-sub">Aggiungi quello che ti serve</div></div></div>';
+  html+='<div class="gstep"><div class="gstep-num">1</div><div class="gstep-text">Scrivi <strong>italiano + inglese</strong> (opzionalmente la pronuncia) → Aggiungi.</div></div>';
+  html+='<div class="gstep"><div class="gstep-num">2</div><div class="gstep-text">Tocca <strong>🔊</strong> per sentire la pronuncia di qualsiasi parola.</div></div>';
+  html+='<div class="gstep" style="margin-bottom:0"><div class="gstep-num">3</div><div class="gstep-text">Usa la <strong>barra di ricerca</strong> per trovare parole velocemente anche con un cliente.</div></div></div>';
+  
+  html+='<div class="routine-g"><h3>📆 Routine serale consigliata (20 min)</h3>';
+  html+='<div class="routine-row-g"><div class="ttime">5 min</div><div>Apri il <strong>Piano</strong> → leggi cosa fare stasera per il tuo mese corrente</div></div>';
+  html+='<div class="routine-row-g"><div class="ttime">5 min</div><div><strong>Flashcard</strong> del mese — ripassi le parole nuove</div></div>';
+  html+='<div class="routine-row-g"><div class="ttime">5 min</div><div><strong>Quiz</strong> o <strong>Completa la frase</strong> — testi la memoria</div></div>';
+  html+='<div class="routine-row-g" style="margin-bottom:0"><div class="ttime">5 min</div><div><strong>Dettato</strong> o <strong>AI Frasi</strong> — alleni l\'orecchio o crei esercizi su misura</div></div></div>';
+  
+  html+='<div class="save-g"><h3>💾 Come vengono salvati i progressi</h3>';
+  html+='<div class="save-row-g">Tutto salvato <strong>sul tuo telefono</strong>, non su internet. Funziona offline.</div>';
+  html+='<div class="save-row-g">Il mese del piano e i punteggi vengono ricordati anche se chiudi il sito.</div>';
+  html+='<div class="save-row-g">Viene tenuto solo il <strong>punteggio più alto</strong> per ogni modalità.</div>';
+  html+='<div class="save-row-g"><strong>Attenzione:</strong> non cancellare la cache di Safari o Chrome, altrimenti perdi i progressi.</div></div>';
+  
+  html+='<div class="install-g"><h3>📱 Come installarlo come app</h3>';
+  html+='<div class="device-g"><div class="device-g-name">iPhone / iPad</div>';
+  html+='<div class="device-g-step">Apri il file in <strong>Safari</strong></div>';
+  html+='<div class="device-g-step">Tocca <strong>Condividi</strong> (quadrato con freccia in su)</div>';
+  html+='<div class="device-g-step">Tocca <strong>"Aggiungi alla schermata Home"</strong></div></div>';
+  html+='<div class="device-g"><div class="device-g-name">Android</div>';
+  html+='<div class="device-g-step">Apri il file in <strong>Chrome</strong></div>';
+  html+='<div class="device-g-step">Tre puntini → <strong>"Aggiungi a schermata Home"</strong></div></div>';
+  html+='<div class="device-g" style="margin-bottom:0;padding-bottom:0;border-bottom:none"><div class="device-g-name">Computer</div>';
+  html+='<div class="device-g-step">Apri con qualsiasi browser — funziona direttamente</div></div></div>';
+  
+  document.getElementById('guidaContent').innerHTML=html;
+}
+
+// ======================================================
+// INIT
+// ======================================================
+renderHome();
+</script>
+</body>
+</html>
